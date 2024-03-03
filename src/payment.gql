@@ -1,0 +1,57 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@composeDirective", "@extends", "@external", "@inaccessible", "@interfaceObject", "@key", "@override", "@provides", "@requires", "@shareable", "@tag"])
+
+"""A payment of an invoice or return"""
+type Payment
+  @key(fields: "id")
+{
+  """The uuid identifier of the product item"""
+  id: UUID!
+
+  """Example field (placeholder)"""
+  amount: Float!
+}
+
+"""A universally unique identifier compliant UUID Scalar"""
+scalar UUID
+
+type PaymentMethod {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  payment(id: Int!): Payment!
+  paymentMethod(id: Int!): PaymentMethod!
+}
+
+type Mutation {
+  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
+  updatePayment(updatePaymentInput: UpdatePaymentInput!): Payment!
+  removePayment(id: Int!): Payment!
+  createPaymentMethod(createPaymentMethodInput: CreatePaymentMethodInput!): PaymentMethod!
+  updatePaymentMethod(updatePaymentMethodInput: UpdatePaymentMethodInput!): PaymentMethod!
+  removePaymentMethod(id: Int!): PaymentMethod!
+}
+
+input CreatePaymentInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdatePaymentInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreatePaymentMethodInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdatePaymentMethodInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}

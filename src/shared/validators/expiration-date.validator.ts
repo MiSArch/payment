@@ -1,0 +1,42 @@
+import { registerDecorator, ValidationOptions } from 'class-validator';
+
+export function IsExpirationDate(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isExpirationDateValid',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          if (typeof value !== 'string') return false;
+
+          const [month, year] = value
+            .split('/')
+            .map((val) => parseInt(val, 10));
+          const currentYear = new Date().getFullYear() % 100; // YY format
+          const currentMonth = new Date().getMonth() + 1; // 1 - 12 for January to December
+
+          // Adjust year for MM/YY and MM/YYYY formats
+          const adjustedYear = year > 2000 ? year - 2000 : year;
+
+          if (adjustedYear < currentYear || adjustedYear > currentYear + 20) {
+            // Check if year is in a reasonable range
+            return false;
+          } else if (adjustedYear === currentYear && month < currentMonth) {
+            // Check if month is not in the past for the current year
+            return false;
+          } else if (month < 1 || month > 12) {
+            // Check if month is valid
+            return false;
+          }
+          return true;
+        },
+        defaultMessage() {
+          return 'The expiration date is invalid or expired';
+        },
+      },
+    });
+  };
+}
