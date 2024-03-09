@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePaymentInput } from './dto/create-payment.input';
-import { UpdatePaymentInput } from './dto/update-payment-status.input';
 
 @Injectable()
 export class PaymentService {
@@ -16,7 +15,7 @@ export class PaymentService {
     return `This action returns a #${id} payment`;
   }
 
-  update(id: number, updatePaymentInput: UpdatePaymentInput) {
+  update(id: number) {
     return `This action updates a #${id} payment`;
   }
 

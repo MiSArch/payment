@@ -8,50 +8,132 @@ type Payment
   """The uuid identifier of the product item"""
   id: UUID!
 
-  """Example field (placeholder)"""
+  """Payment Amount in EUR"""
   amount: Float!
+
+  """Date of the payment"""
+  payedAt: DateTime!
+
+  """Status of the payment"""
+  status: PaymentStatus!
 }
 
 """A universally unique identifier compliant UUID Scalar"""
 scalar UUID
 
-type PaymentMethod {
-  """Example field (placeholder)"""
-  exampleField: Int!
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""The status of an payment of an invoice or return"""
+enum PaymentStatus {
+  """The payment was created but not yet processed"""
+  OPEN
+
+  """The payment is currently being processed"""
+  PROCCESSING
+
+  """The payment was successfully processed and the amount was transfered"""
+  SUCCEEDED
+
+  """The payment processing failed indefinetely"""
+  FAILED
+
+  """The payment was sold to external inkasso service"""
+  INKASSO
+}
+
+"""Foreign type User"""
+type User
+  @key(fields: "id")
+{
+  """The uuid identifier of the user"""
+  id: UUID!
+}
+
+"""A stored payment information of an user"""
+type PaymentInformation
+  @key(fields: "id")
+{
+  """The uuid identifier of the payment information"""
+  id: UUID!
+
+  """The corresponding payment method"""
+  paymentMethod: PaymentMethod!
+  methodDetails: JSONObject!
+
+  """The user who owns the payment information"""
+  user: User!
+}
+
+"""The supported payment methods"""
+enum PaymentMethod {
+  """The user pays after ordering the product"""
+  INVOICE
+
+  """The user pays before the product is shipped"""
+  PREPAYMENT
+
+  """The amount is charged to the users credit card"""
+  CREDIT_CARD
+}
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
+"""The users view of a stored payment information"""
+type UserPaymentInformation {
+  """The uuid identifier of the payment information"""
+  id: UUID!
+
+  """The corresponding payment method"""
+  paymentMethod: PaymentMethod!
+  methodDetails: JSONObject!
 }
 
 type Query {
   payment(id: Int!): Payment!
-  paymentMethod(id: Int!): PaymentMethod!
+
+  """Return true, if the service is healthy"""
+  Healthcheck: Boolean!
+
+  """ Retrieves all payment informations"""
+  paymentInformations: [PaymentInformation!]!
+
+  """ Retrieves all payment informations of an user"""
+  userPaymentInformations: [UserPaymentInformation!]!
 }
 
 type Mutation {
-  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
-  updatePayment(updatePaymentInput: UpdatePaymentInput!): Payment!
   removePayment(id: Int!): Payment!
-  createPaymentMethod(createPaymentMethodInput: CreatePaymentMethodInput!): PaymentMethod!
-  updatePaymentMethod(updatePaymentMethodInput: UpdatePaymentMethodInput!): PaymentMethod!
-  removePaymentMethod(id: Int!): PaymentMethod!
+
+  """Adds a credit card to the users stored payment informations"""
+  createCreditCardPaymentInformation(input: CreateCCInformationInput!): UserPaymentInformation!
+
+  """Deletes a payment information by id"""
+  deletePaymentInformation(
+    """UUID of payment information to delete"""
+    id: UUID!
+  ): PaymentInformation!
+
+  """Deletes a payment information by id of an user"""
+  deleteUserPaymentInformation(
+    """UUID of payment information to delete"""
+    id: UUID!
+  ): UserPaymentInformation!
 }
 
-input CreatePaymentInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
+"""All required informations to save an credit card"""
+input CreateCCInformationInput {
+  """The card holders name"""
+  cardHolder: String!
 
-input UpdatePaymentInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
+  """The credit cards number"""
+  cardNumber: String!
 
-input CreatePaymentMethodInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdatePaymentMethodInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  """The credit cards expiration date"""
+  exirationDate: String!
 }

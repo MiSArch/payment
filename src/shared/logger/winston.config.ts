@@ -2,7 +2,10 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
-// Create transports instance
+/**
+ * Development transports for logging.
+ * All logs are printed to the console.
+ */
 const devTransports = [
   new winston.transports.Console({
     level: 'debug',
@@ -16,6 +19,11 @@ const devTransports = [
   }),
 ];
 
+/**
+ * Array of production transports for logging.
+ * Errors are logged in a daily rotating file with a 30 day retention period.
+ * Info logs are logged in a daily rotating file with a 14 day retention period.
+ */
 const prodTransports = [
   new winston.transports.DailyRotateFile({
     level: 'error',
@@ -23,7 +31,7 @@ const prodTransports = [
     datePattern: 'YYYY-MM-DD-HH',
     zippedArchive: true,
     maxSize: '20m',
-    maxFiles: '14d',
+    maxFiles: '30d',
   }),
   new winston.transports.DailyRotateFile({
     level: 'info',
@@ -31,7 +39,7 @@ const prodTransports = [
     datePattern: 'YYYY-MM-DD-HH',
     zippedArchive: true,
     maxSize: '20m',
-    maxFiles: '7d',
+    maxFiles: '14d',
   }),
 ];
 

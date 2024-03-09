@@ -1,0 +1,37 @@
+services:
+  payment:
+    extends:
+      file: docker-compose-base.yaml
+      service: payment
+    ports:
+      - 8080:8080
+    build:
+      context: ./
+      target: development
+    # Mount our host Directory to the docker container
+    # Mount (.) current directory to the docker container src/app
+    # reflect file changes from host to container
+    volumes:
+      - .:/src/payment
+      - /src/payment/node_modules
+    command: npm run start:dev
+  payment-db:
+    extends:
+      file: docker-compose-base.yaml
+      service: payment-db
+    ports:
+      - "27017:27017"
+  payment-dapr:
+    extends:
+      file: docker-compose-base.yaml
+      service: payment-dapr
+    volumes:
+      - "./.dapr/dapr-config-minimal.yaml:/config.yaml"
+      - "./.dapr/components:/components"
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - 50006:50006
+volumes:
+  payment-db-data:

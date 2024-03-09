@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateCCInformationInput } from './dto/create-creadit-card-information.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaymentInformation } from './entities/payment-information.entity';
 import { Model } from 'mongoose';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { User } from 'src/graphql-types/user.entity';
+import { UserPaymentInformation } from './entities/user-payment-information.entity';
 
 @Injectable()
 export class PaymentInformationService {
@@ -15,12 +16,16 @@ export class PaymentInformationService {
     private readonly logger: Logger,
   ) {}
 
-  // method for credit cards
+  /**
+   * Creates a credit card payment information for a user.
+   * @param ccInput - The input for creating the credit card information.
+   * @param user - The user for whom the payment information is being created.
+   * @returns A promise that resolves to the created payment information.
+   */
   createCreditCardInformation(
     ccInput: CreateCCInformationInput,
     user: User,
-  ): Promise<PaymentInformation> {
-    // add credit card as payment information
+  ): Promise<UserPaymentInformation> {
     this.logger.log(`{createCreditCardInformation} input: ${ccInput}`);
 
     // build paymentInformation
@@ -31,47 +36,105 @@ export class PaymentInformationService {
     });
   }
 
-  // method for all paymentInformations, that require no additional data
+  /**
+   * Creates a new payment information record that requires no additional information.
+   *
+   * @param paymentMethod - The payment method to be associated with the payment information.
+   * @param user - The user for whom the payment information is being created.
+   * @returns A Promise that resolves to the created PaymentInformation object.
+   */
   createPaymentInformation(
     paymentMethod: PaymentMethod,
     user: User,
-  ): Promise<PaymentInformation> {
-    // add credit card as payment information
+  ): Promise<UserPaymentInformation> {
     this.logger.log(
       `{createPaymentInformation} input: ${{ paymentMethod, user }}`,
     );
 
-    // build paymentInformation
     return this.paymentInformationModel.create({ paymentMethod, user });
   }
 
-  findUserPaymentInformation(user: User) {
-    // return all payment informations stored by the user
-    this.logger.log(`{findUserPaymentInformation} input: ${user}`);
-    return this.paymentInformationModel.find({ user });
+  /**
+   * Retrieves the payment information associated with a user.
+   * @param user - The user for whom to retrieve the payment information.
+   * @returns A promise that resolves to an array of PaymentInformation objects.
+   */
+  async findUserPaymentInformation(
+    user: User,
+  ): Promise<UserPaymentInformation[]> {
+    this.logger.debug(`{findUserPaymentInformation} input: ${user}`);
+    const infos = await this.paymentInformationModel
+      .find({ user })
+      .select('-user');
+
+    this.logger.debug(
+      `{findUserPaymentInformation} returning ${infos.length} results`,
+    );
+
+    return infos;
   }
 
-  findAll() {
+  /**
+   * Retrieves all payment information in the system.
+   * @returns A promise that resolves to an array of PaymentInformation objects.
+   */
+  async findAll(): Promise<PaymentInformation[]> {
+    this.logger.debug(`{findAll}`);
+
     // return all payment informations in the system
-    return this.paymentInformationModel.find({});
+    const infos = await this.paymentInformationModel.find({});
+
+    this.logger.debug(`{findAll} returning ${infos.length} results`);
+    return infos;
   }
 
-  async deleteUsersPaymentInformation(id: string, user: User) {
-    // delete a users paymentMethod
-    this.logger.debug(`{deleteUsersPaymentInformation} query: ${{ id, user }}`);
+  async findById(_id: string): Promise<PaymentInformation> {
+    this.logger.debug(`{fondOne} query: ${_id}`);
 
-    const deletedPaymentInfo =
-      await this.paymentInformationModel.findOneAndDelete({
-        id,
-        user,
-      });
+    // return all payment informations in the system
+    const existingInfo = await this.paymentInformationModel.findById(_id);
+
+    if (!existingInfo) {
+      throw new NotFoundException(
+        `Payment Information with ID "${_id}" not found`,
+      );
+    }
+
+    this.logger.debug(`{findOne} returning ${existingInfo._id}`);
+    return existingInfo;
+  }
+
+  /**
+   * Deletes a user's payment information.
+   * @param id - The ID of the payment information to delete.
+   * @param user - The user object associated with the payment information.
+   * @returns The deleted payment information.
+   */
+  async deleteUsersPaymentInformation(
+    id: string,
+    user: User,
+  ): Promise<UserPaymentInformation> {
+    this.logger.debug(
+      `{deleteUsersPaymentInformation} query: { id ${id} user ${user} }`,
+    );
+
+    const deletedPaymentInfo = await this.paymentInformationModel
+      .findOneAndDelete({ _id: id, user })
+      .select('-user');
 
     this.logger.debug(
       `{deleteUsersPaymentInformation} returning ${JSON.stringify(deletedPaymentInfo)}`,
     );
+
+    return deletedPaymentInfo;
   }
 
-  async delete(_id: string) {
+  /**
+   * Deletes a payment information.
+   * @param _id - The ID of the payment information to delete.
+   * @returns The deleted payment information.
+   */
+  async delete(_id: string): Promise<PaymentInformation> {
     // delete a payment Information
     this.logger.debug(`{delete} query: ${_id}`);
 

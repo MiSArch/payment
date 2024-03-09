@@ -1,5 +1,13 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 
+/**
+ * Decorator function that validates the expiration date of a credit card.
+ * The expiration date must be in the format "MM/YY" or "MM/YYYY".
+ * The year must be between the current year and the next 20 years.
+ * The month must be between 1 and 12.
+ * @param validationOptions - Optional validation options.
+ * @returns A decorator function that can be used to validate the expiration date.
+ */
 export function IsExpirationDate(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({

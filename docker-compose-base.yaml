@@ -1,0 +1,53 @@
+# Docker Compose Configuration
+# visit https://docs.docker.com/compose/
+
+version: '3.8'
+services:
+  # app service for your backend
+  payment:
+    restart: unless-stopped
+    healthcheck:
+      test: >
+        curl -f -X POST http://localhost:8080/graphql
+        -H "Content-Type: application/json"
+        --data '{ "query": "{ Healthcheck }" }' || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
+    build:
+      context: ./
+      target: production
+    environment:
+      DATABASE_URI: mongodb://payment-db:27017
+      DATABASE_NAME: misarch
+    depends_on:
+      - payment-db
+  payment-db:
+    image: mongo:6.0
+    hostname: payment-db
+    restart: always
+    volumes:
+      - payment-db-data:/data/db
+  payment-dapr:
+    image: "daprio/daprd:edge"
+    network_mode: "service:payment"
+    command:
+      [
+        "./daprd",
+        "--app-id",
+        "payment",
+        "--app-port",
+        "8080",
+        "--dapr-http-port",
+        "3500",
+        "-placement-host-address",
+        "placement:50006",
+        "--config",
+        "/config.yaml",
+        "--resources-path",
+        "/components",
+      ]
+
+volumes:
+  payment-db-data:

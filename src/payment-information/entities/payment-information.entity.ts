@@ -31,9 +31,9 @@ export class PaymentInformation {
   })
   paymentMethod: PaymentMethod;
 
-  @Prop({ required: false })
+  @Prop({ required: false, type: Object })
   @Field(() => GraphQLJSONObject)
-  methodDetails: any;
+  methodDetails?: object;
 
   @Prop({ required: true })
   @Field(() => User, {

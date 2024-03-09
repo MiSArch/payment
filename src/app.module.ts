@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
 import { PaymentModule } from './payment/payment.module';
@@ -9,6 +9,7 @@ import {
 import { UUID } from './shared/scalars/CustomUuidScalar';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentInformationModule } from './payment-information/payment-information.module';
+import { RolesGuard } from './shared/guards/roles.guard';
 
 @Module({
   imports: [
@@ -21,14 +22,20 @@ import { PaymentInformationModule } from './payment-information/payment-informat
       autoSchemaFile: {
         federation: 2,
       },
+      context: ({ req }) => ({ request: req }),
     }),
     PaymentModule,
     // For data persistence
-    MongooseModule.forRoot('mongodb://localhost:27017', {
+    MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
     PaymentInformationModule,
   ],
-  providers: [Logger],
+  providers: [
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
