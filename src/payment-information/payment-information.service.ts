@@ -26,7 +26,7 @@ export class PaymentInformationService {
 
   /**
    * Creates a credit card payment information for a user.
-   * @param ccInput - The input for creating the credit card information.
+   * @param input - The input for creating the credit card information.
    * @param user - The user for whom the payment information is being created.
    * @returns A promise that resolves to the created payment information.
    */
@@ -73,6 +73,14 @@ export class PaymentInformationService {
     return this.paymentInformationModel.create({ paymentMethod, user });
   }
 
+  /**
+   * Retrieves payment information based on the provided arguments and filter.
+   * User information is removed from the returned results since it is not exposed via GraphQL.
+   *
+   * @param args - The arguments for finding payment information.
+   * @param filter - The filter to apply when retrieving payment information.
+   * @returns A promise that resolves to an array of PaymentInformation objects.
+   */
   async find(
     args: FindPaymentInformationsArgs,
     filter: any,
