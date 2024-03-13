@@ -10,6 +10,7 @@ import { UUID } from './shared/scalars/CustomUuidScalar';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentInformationModule } from './payment-information/payment-information.module';
 import { RolesGuard } from './shared/guards/roles.guard';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RolesGuard } from './shared/guards/roles.guard';
       dbName: process.env.DATABASE_NAME,
     }),
     PaymentInformationModule,
+    HealthModule,
   ],
   providers: [
     {

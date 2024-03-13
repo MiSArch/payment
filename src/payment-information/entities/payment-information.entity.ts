@@ -1,4 +1,4 @@
-import { ObjectType, Field, Directive } from '@nestjs/graphql';
+import { ObjectType, Field, Directive, HideField } from '@nestjs/graphql';
 import { GraphQLJSONObject } from 'graphql-type-json';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,13 +32,20 @@ export class PaymentInformation {
   paymentMethod: PaymentMethod;
 
   @Prop({ required: false, type: Object })
-  @Field(() => GraphQLJSONObject)
-  methodDetails?: object;
-
-  @Prop({ required: true })
-  @Field(() => User, {
-    description: 'The user who owns the payment information',
+  @Field(() => GraphQLJSONObject, {
+    description: 'The details for the User to identify the payment method',
   })
+  publicMethodDetails?: object;
+
+  // The secret details required to process the payment method
+  @Prop({ required: false, type: Object })
+  @HideField()
+  secretMethodDetails?: object;
+
+  // The user who owns the payment information
+  // It is not exposed via graphql since its just used internally
+  @Prop({ required: true })
+  @HideField()
   user: User;
 }
 

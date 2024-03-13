@@ -18,6 +18,7 @@ export function IsExpirationDate(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
+          console.log('value', value);
           if (typeof value !== 'string') return false;
 
           const [month, year] = value

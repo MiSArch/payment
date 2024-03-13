@@ -39,10 +39,8 @@ export class RolesGuard implements CanActivate {
     // extract information from headers
     const authorizedUser = JSON.parse(headers['authorized-user']);
 
-    console.log(authorizedUser);
-
-    // add user to request
-    ctx.getContext().req.user = authorizedUser.id;
+    // add user entity to request
+    ctx.getContext().req.user = authorizedUser;
 
     // check if user has required roles
     const roles = authorizedUser.roles;

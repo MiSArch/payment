@@ -3,7 +3,7 @@ import { IsCreditCard } from 'class-validator';
 import { IsExpirationDate } from 'src/shared/validators/expiration-date.validator';
 
 @InputType({ description: 'All required informations to save an credit card' })
-export class CreateCCInformationInput {
+export class CreateCreditCardInformationInput {
   @Field(() => String, {
     description: 'The card holders name',
   })
@@ -21,5 +21,5 @@ export class CreateCCInformationInput {
   })
   @IsExpirationDate()
   // all credit cards consist of 16 numbers
-  exirationDate: string;
+  expirationDate: string;
 }

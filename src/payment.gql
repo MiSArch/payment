@@ -44,14 +44,6 @@ enum PaymentStatus {
   INKASSO
 }
 
-"""Foreign type User"""
-type User
-  @key(fields: "id")
-{
-  """The uuid identifier of the user"""
-  id: UUID!
-}
-
 """A stored payment information of an user"""
 type PaymentInformation
   @key(fields: "id")
@@ -61,10 +53,9 @@ type PaymentInformation
 
   """The corresponding payment method"""
   paymentMethod: PaymentMethod!
-  methodDetails: JSONObject!
 
-  """The user who owns the payment information"""
-  user: User!
+  """The details for the User to identify the payment method"""
+  publicMethodDetails: JSONObject!
 }
 
 """The supported payment methods"""
@@ -84,50 +75,85 @@ The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](
 """
 scalar JSONObject
 
-"""The users view of a stored payment information"""
-type UserPaymentInformation {
-  """The uuid identifier of the payment information"""
-  id: UUID!
+"""A connection of product items"""
+type PaymentInformationConnection {
+  """The resulting items"""
+  nodes: [PaymentInformation!]
 
-  """The corresponding payment method"""
-  paymentMethod: PaymentMethod!
-  methodDetails: JSONObject!
+  """The total amount of items in this connection"""
+  totalCount: Int!
+
+  """Whether this connection has a next page"""
+  hasNextPage: Boolean!
 }
 
 type Query {
   payment(id: Int!): Payment!
 
-  """Return true, if the service is healthy"""
-  Healthcheck: Boolean!
+  """ Retrieves all payment informations matching the fitler"""
+  paymentInformations(
+    """Number of items to skip"""
+    skip: Int = 0
 
-  """ Retrieves all payment informations"""
-  paymentInformations: [PaymentInformation!]!
+    """Number of items to return"""
+    first: Int = 2147483647
 
-  """ Retrieves all payment informations of an user"""
-  userPaymentInformations: [UserPaymentInformation!]!
+    """Ordering"""
+    orderBy: PaymentInformationOrder
+
+    """Filtering"""
+    filter: ProductItemFilter
+  ): PaymentInformationConnection!
+}
+
+"""Ordering options for product items"""
+input PaymentInformationOrder {
+  """The field to order by"""
+  field: ProductItemOrderField
+
+  """The direction to order by"""
+  direction: OrderDirection
+}
+
+"""The field to order Product Items by"""
+enum ProductItemOrderField {
+  """Order Product Items by their ID"""
+  ID
+}
+
+"""The direction to order a list of items by"""
+enum OrderDirection {
+  """Ascending Order"""
+  ASC
+
+  """Decending Order"""
+  DESC
+}
+
+"""Filtering options for payment informations"""
+input ProductItemFilter {
+  """Connected user id"""
+  user: UUID
+
+  """Linked payment method"""
+  paymentMethod: PaymentMethod
 }
 
 type Mutation {
   removePayment(id: Int!): Payment!
 
   """Adds a credit card to the users stored payment informations"""
-  createCreditCardPaymentInformation(input: CreateCCInformationInput!): UserPaymentInformation!
+  createCreditCardPaymentInformation(input: CreateCreditCardInformationInput!): PaymentInformation!
 
   """Deletes a payment information by id"""
   deletePaymentInformation(
     """UUID of payment information to delete"""
     id: UUID!
   ): PaymentInformation!
-
-  """Deletes a payment information by id of an user"""
-  deleteUserPaymentInformation(
-    """UUID of payment information to delete"""
-    id: UUID!
-  ): UserPaymentInformation!
 }
 
 """All required informations to save an credit card"""
-input CreateCCInformationInput {
+input CreateCreditCardInformationInput {
   """The card holders name"""
   cardHolder: String!
 
@@ -135,5 +161,5 @@ input CreateCCInformationInput {
   cardNumber: String!
 
   """The credit cards expiration date"""
-  exirationDate: String!
+  expirationDate: String!
 }

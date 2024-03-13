@@ -10,7 +10,9 @@ describe('PaymentInformationResolver', () => {
       providers: [PaymentInformationResolver, PaymentInformationService],
     }).compile();
 
-    resolver = module.get<PaymentInformationResolver>(PaymentInformationResolver);
+    resolver = module.get<PaymentInformationResolver>(
+      PaymentInformationResolver,
+    );
   });
 
   it('should be defined', () => {
