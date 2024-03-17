@@ -19,6 +19,7 @@ import { OrderItemDTO } from './order-item.dto';
  * @property userId UUID of user connected with Order.
  * @property createdAt Timestamp when Order was created.
  * @property orderStatus The status of the Order.
+ * @property compensatableOrderAmount Total cost of all order items after shipping and discounts.
  * @property placedAt Timestamp of Order placement. Not present until Order is placed.
  * @property rejectionReason The rejection reason if status of the Order is REJECTED.
  * @property orderItems List of OrderItems associated with the Order.
@@ -36,9 +37,7 @@ export class OrderDTO {
   @IsEnum(OrderStatus)
   orderStatus: OrderStatus;
   @IsInt()
-  totalAmount: number;
-  @IsInt()
-  totalCents: number;
+  compensatableOrderAmount: number;
   @IsOptional()
   @IsDate()
   placedAt?: Date;

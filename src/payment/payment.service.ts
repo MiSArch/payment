@@ -136,4 +136,12 @@ export class PaymentService {
     this.logger.debug(`{delete} returning ${JSON.stringify(deletedPayment)}`);
     return deletedPayment;
   }
+
+  async startPaymentProcess(
+    orderId: string,
+    paymentInformationId: string,
+    amount: number,
+  ) {
+    throw new Error('Method not implemented.');
+  }
 }

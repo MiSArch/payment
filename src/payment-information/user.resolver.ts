@@ -49,7 +49,7 @@ export class UserResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-    // build default FindProductItemArgs
+    // build default FindPaymentInformationArgs
     const args = new FindPaymentInformationsArgs();
     // filter for correct user
     args.filter = { user: user.id };

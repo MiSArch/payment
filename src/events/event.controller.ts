@@ -51,7 +51,7 @@ export class EventController {
     // Extract the order context from the event
     const { order } = event;
     // Extract the payment information from the order
-    const { id, paymenentInformationId, totalAmount, totalCents } = order;
+    const { id, paymentInformationId, compensatableOrderAmount } = order;
 
     this.logger.log(
       `Received successfull discount validation event for order with id: ${order.id}`,
@@ -60,9 +60,8 @@ export class EventController {
     // Call the payment service to start the payment process
     this.paymentService.startPaymentProcess(
       id,
-      paymenentInformationId,
-      totalAmount,
-      totalCents,
+      paymentInformationId,
+      compensatableOrderAmount,
     );
   }
 

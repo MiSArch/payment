@@ -29,14 +29,12 @@ export class Payment {
     return this._id;
   }
 
-  // Float amount is seperated into EUR and Cents to avoid floating point issues
+  // Total amount in the smallest currency unit (e.g. cents)
   @Prop({ required: true })
-  @Field(() => Float, { description: 'Payment Amount [Full Euros]]' })
-  amountEUR: number;
-
-  @Prop({ required: true })
-  @Field(() => Float, { description: 'Payment Amount [Full Cents]]' })
-  amountCents: number;
+  @Field(() => Float, {
+    description: 'Payment Amount in the smallest currency unit (e.g. cents)',
+  })
+  totalAmount: number;
 
   @Prop({ required: true })
   @Field(() => PaymentStatus, { description: 'Status of the payment' })
