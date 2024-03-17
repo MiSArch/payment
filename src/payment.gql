@@ -75,7 +75,7 @@ The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](
 """
 scalar JSONObject
 
-"""A connection of product items"""
+"""A connection of payment informations"""
 type PaymentInformationConnection {
   """The resulting items"""
   nodes: [PaymentInformation!]
@@ -102,22 +102,22 @@ type Query {
     orderBy: PaymentInformationOrder
 
     """Filtering"""
-    filter: ProductItemFilter
+    filter: PaymentInformationFilter
   ): PaymentInformationConnection!
 }
 
-"""Ordering options for product items"""
+"""Ordering options for payment informations"""
 input PaymentInformationOrder {
   """The field to order by"""
-  field: ProductItemOrderField
+  field: PaymentInformationOrderField
 
   """The direction to order by"""
   direction: OrderDirection
 }
 
-"""The field to order Product Items by"""
-enum ProductItemOrderField {
-  """Order Product Items by their ID"""
+"""The field to order payment informations by"""
+enum PaymentInformationOrderField {
+  """Order payment informations by their id"""
   ID
 }
 
@@ -131,7 +131,7 @@ enum OrderDirection {
 }
 
 """Filtering options for payment informations"""
-input ProductItemFilter {
+input PaymentInformationFilter {
   """Connected user id"""
   user: UUID
 

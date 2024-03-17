@@ -3,7 +3,7 @@ import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
 @InputType({ description: 'Filtering options for payment informations' })
-export class ProductItemFilter {
+export class PaymentInformationFilter {
   @Field(() => UUID, {
     description: 'Connected user id',
     nullable: true,

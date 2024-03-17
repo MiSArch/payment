@@ -1,16 +1,16 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum PaymentInformationOrderField {
-  // Order Product Items by their ID
+  // Order payment informations by their ID
   ID = '_id',
 }
 
 registerEnumType(PaymentInformationOrderField, {
-  name: 'ProductItemOrderField',
-  description: 'The field to order Product Items by',
+  name: 'PaymentInformationOrderField',
+  description: 'The field to order payment informations by',
   valuesMap: {
     ID: {
-      description: 'Order Product Items by their ID',
+      description: 'Order payment informations by their id',
     },
   },
 });

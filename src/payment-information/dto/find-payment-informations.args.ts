@@ -2,7 +2,7 @@ import { Field, Int, ArgsType } from '@nestjs/graphql';
 import { Min } from 'class-validator';
 import { MAX_INT32 } from 'src/shared/constants/constants';
 import { PaymentInformationOrder } from './order-directions.input';
-import { ProductItemFilter } from './filter-payment-information.dto';
+import { PaymentInformationFilter } from './filter-payment-information.dto';
 
 @ArgsType()
 export class FindPaymentInformationsArgs {
@@ -26,9 +26,9 @@ export class FindPaymentInformationsArgs {
   })
   orderBy?: PaymentInformationOrder;
 
-  @Field(() => ProductItemFilter, {
+  @Field(() => PaymentInformationFilter, {
     description: 'Filtering',
     nullable: true,
   })
-  filter?: ProductItemFilter;
+  filter?: PaymentInformationFilter;
 }
