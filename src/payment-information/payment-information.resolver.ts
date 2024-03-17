@@ -24,7 +24,7 @@ import { PaymentInformationConnection } from 'src/graphql-types/payment-informat
 export class PaymentInformationResolver {
   constructor(
     private readonly paymentInformationService: PaymentInformationService,
-    // initialize logger with resolver content
+    // initialize logger with resolver context
     private readonly logger: Logger,
   ) {}
 
@@ -90,7 +90,6 @@ export class PaymentInformationResolver {
    * @param reference - The reference object containing the typename and id.
    * @returns A Promise that resolves to a PaymentInformation object.
    */
-  @Roles(Role.SITE_ADMIN, Role.EMPLOYEE, Role.BUYER)
   @ResolveReference()
   resolveReference(reference: {
     __typename: string;

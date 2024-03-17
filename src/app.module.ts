@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentInformationModule } from './payment-information/payment-information.module';
 import { RolesGuard } from './shared/guards/roles.guard';
 import { HealthModule } from './health/health.module';
+import { EventModule } from './events/event.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HealthModule } from './health/health.module';
     }),
     PaymentInformationModule,
     HealthModule,
+    EventModule,
   ],
   providers: [
     {

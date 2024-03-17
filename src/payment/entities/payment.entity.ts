@@ -9,6 +9,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
+import { PaymentInformation } from 'src/payment-information/entities/payment-information.entity';
 
 @ObjectType({ description: 'A payment of an invoice or return' })
 @Schema({
@@ -28,17 +29,29 @@ export class Payment {
     return this._id;
   }
 
+  // Float amount is seperated into EUR and Cents to avoid floating point issues
   @Prop({ required: true })
-  @Field(() => Float, { description: 'Payment Amount in EUR' })
-  amount: number;
+  @Field(() => Float, { description: 'Payment Amount [Full Euros]]' })
+  amountEUR: number;
 
   @Prop({ required: true })
-  @Field(() => GraphQLISODateTime, { description: 'Date of the payment' })
-  payedAt: Date;
+  @Field(() => Float, { description: 'Payment Amount [Full Cents]]' })
+  amountCents: number;
 
   @Prop({ required: true })
   @Field(() => PaymentStatus, { description: 'Status of the payment' })
   status: PaymentStatus;
+
+  @Prop({ required: true })
+  @Field(() => PaymentInformation, { description: 'Used Payment Information' })
+  paymentInformation: PaymentInformation;
+
+  @Prop()
+  @Field(() => GraphQLISODateTime, {
+    description: 'Date of the payment',
+    nullable: true,
+  })
+  payedAt?: Date;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

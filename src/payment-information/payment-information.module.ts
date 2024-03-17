@@ -14,5 +14,6 @@ import {
     ]),
   ],
   providers: [PaymentInformationResolver, PaymentInformationService, Logger],
+  exports: [PaymentInformationService],
 })
 export class PaymentInformationModule {}
