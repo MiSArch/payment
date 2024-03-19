@@ -2,7 +2,7 @@ import { InputType, Field } from '@nestjs/graphql';
 import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
 
-@InputType({ description: 'Ordering options for product items' })
+@InputType({ description: 'Ordering options for payments' })
 export class PaymentOrder {
   @Field(() => PaymentOrderField, {
     description: 'The field to order by',

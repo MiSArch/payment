@@ -25,7 +25,7 @@ export class Payment {
   @Prop({ required: true, default: uuidv4 })
   _id: string;
 
-  @Field(() => UUID, { description: 'The uuid identifier of the product item' })
+  @Field(() => UUID, { description: 'The uuid identifier of the payment' })
   get id(): string {
     return this._id;
   }
