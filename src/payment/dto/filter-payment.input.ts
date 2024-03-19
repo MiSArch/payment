@@ -8,4 +8,10 @@ export class PaymentFilter {
     nullable: true,
   })
   status?: PaymentStatus;
+
+  @Field({ description: 'Timebox start for payment creation' })
+  from?: Date;
+
+  @Field({ description: 'Timebox end for payment creation' })
+  to?: Date;
 }

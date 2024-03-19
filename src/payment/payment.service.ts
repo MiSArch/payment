@@ -5,12 +5,20 @@ import { Model } from 'mongoose';
 import { FindPaymentArgs } from './dto/find-payments.dto';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
 import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
+import { PaymentInformationService } from 'src/payment-information/payment-information.service';
+import { PaymentProviderConnectionService } from 'src/payment-provider-connection/payment-provider-connection.service';
+import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
+import { EventService } from 'src/events/events.service';
+import { OrderDTO } from 'src/events/dto/order/order.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @InjectModel(Payment.name)
     private paymentModel: Model<Payment>,
+    private eventService: EventService,
+    private paymentInformationService: PaymentInformationService,
+    private paymentProviderConnectionService: PaymentProviderConnectionService,
     // initialize logger with service context
     private readonly logger: Logger,
   ) {}
@@ -29,9 +37,12 @@ export class PaymentService {
       )}`,
     );
 
+    // build query
+    const query = this.buildQuery(filter);
+
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
-      .find(filter)
+      .find(query)
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
@@ -137,11 +148,98 @@ export class PaymentService {
     return deletedPayment;
   }
 
-  async startPaymentProcess(
-    orderId: string,
-    paymentInformationId: string,
-    amount: number,
-  ) {
-    throw new Error('Method not implemented.');
+  /**
+   * Creates a new payment entity and starts the payment process.
+   * @param order - The order for which to create a payment.
+   * @returns A Promise that resolves to the created Payment object.
+   */
+  async create(order: OrderDTO): Promise<Payment> {
+    // Extract the payment information from the order
+    const { id, paymentInformationId, compensatableOrderAmount } = order;
+    // get payment information
+    const paymentInformation =
+      await this.paymentInformationService.findById(paymentInformationId);
+
+    if (!paymentInformation) {
+      // fatal error that requires complete order compensation
+      this.logger.error(
+        `{startPaymentProcess} Payment Information ${paymentInformationId} for order ${id} not found, throwing payment failed event`,
+      );
+
+      this.eventService.publishPaymentFailedEvent(order);
+    }
+
+    // create payment
+    const payment = await this.paymentModel.create({
+      id,
+      paymentInformation,
+      compensatableOrderAmount,
+    });
+
+    // transfer to payment method controller to handle payment process
+    this.paymentProviderConnectionService.startPaymentProcess(
+      paymentInformation.paymentMethod,
+      payment._id,
+    );
+
+    return payment;
+  }
+
+  /**
+   * Updates the payment status of a payment.
+   * @param _id - The ID of the payment.
+   * @param status - The new status of the payment.
+   * @returns A Promise that resolves to the updated Payment object.
+   * @throws NotFoundException if the payment with the specified id is not found.
+   */
+  async updatePaymentStatus(_id: string, status: PaymentStatus): Promise<any> {
+    this.logger.log(
+      `{updatePaymentStatus} Updating payment status for id: "${_id}" to ${status}`,
+    );
+    const update: any = { status };
+    // set payedAt if status is succeeded
+    if (status === PaymentStatus.SUCCEEDED) {
+      update.payedAt = new Date();
+    }
+
+    const existingPayment = await this.paymentModel
+      .findOneAndUpdate({ _id }, update)
+      .setOptions({ overwrite: true, new: true });
+
+    if (!existingPayment) {
+      throw new NotFoundException(`Payment with id "${_id}" not found`);
+    }
+
+    this.logger.debug(
+      `{updatePaymentStatus} returning ${JSON.stringify(existingPayment)}`,
+    );
+
+    return existingPayment;
+  }
+
+  /**
+   * Builds a query object based on the provided filter.
+   * @param filter - The filter object containing the criteria for the query.
+   * @returns The query object.
+   */
+  buildQuery(filter: any): any {
+    const query: any = {};
+    if (filter.status) {
+      query.status = filter.status;
+    }
+
+    if (filter.from) {
+      query.createdAt = {
+        $gte: filter.from,
+      };
+    }
+
+    if (filter.to) {
+      query.createdAt = {
+        ...query.createdAt,
+        $lte: filter.to,
+      };
+    }
+    return query;
   }
 }

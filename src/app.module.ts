@@ -12,6 +12,7 @@ import { PaymentInformationModule } from './payment-information/payment-informat
 import { RolesGuard } from './shared/guards/roles.guard';
 import { HealthModule } from './health/health.module';
 import { EventModule } from './events/event.module';
+import { PaymentProviderConnectionModule } from './payment-provider-connection/payment-provider-connection.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EventModule } from './events/event.module';
     PaymentInformationModule,
     HealthModule,
     EventModule,
+    PaymentProviderConnectionModule,
   ],
   providers: [
     {

@@ -18,6 +18,7 @@ import { PaymentInformation } from 'src/payment-information/entities/payment-inf
   id: false,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
+  timestamps: true,
 })
 @Directive('@key(fields: "id")')
 export class Payment {
@@ -37,8 +38,11 @@ export class Payment {
   totalAmount: number;
 
   @Prop({ required: true })
-  @Field(() => PaymentStatus, { description: 'Status of the payment' })
-  status: PaymentStatus;
+  @Field(() => PaymentStatus, {
+    description: 'Status of the payment',
+    defaultValue: PaymentStatus.OPEN,
+  })
+  status: PaymentStatus = PaymentStatus.OPEN;
 
   @Prop({ required: true })
   @Field(() => PaymentInformation, { description: 'Used Payment Information' })
@@ -50,6 +54,13 @@ export class Payment {
     nullable: true,
   })
   payedAt?: Date;
+
+  @Prop()
+  @Field(() => Number, {
+    description: 'Number of retries for the payment process',
+    defaultValue: 0,
+  })
+  numberOfRetries: number = 0;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
