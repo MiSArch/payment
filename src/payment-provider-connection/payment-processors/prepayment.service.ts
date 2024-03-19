@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { EventService } from 'src/events/events.service';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
@@ -14,6 +14,7 @@ export class PrepaymentService {
     private readonly logger: Logger,
     private readonly paymentService: PaymentService,
     private readonly connectionService: ConnectorService,
+    @Inject(forwardRef(() => EventService))
     private readonly eventService: EventService,
   ) {}
 

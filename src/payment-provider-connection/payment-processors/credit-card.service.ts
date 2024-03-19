@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { EventService } from 'src/events/events.service';
 import { Payment } from 'src/payment/entities/payment.entity';
 import { PaymentService } from 'src/payment/payment.service';
@@ -12,6 +12,7 @@ export class CreditCardService {
     private readonly logger: Logger,
     private readonly paymentService: PaymentService,
     private readonly connectionService: ConnectorService,
+    @Inject(forwardRef(() => EventService))
     private readonly eventService: EventService,
   ) {}
 

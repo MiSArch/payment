@@ -53,6 +53,9 @@ type Payment
 
   """Date of the payment"""
   payedAt: DateTime
+
+  """Number of retries for the payment process"""
+  numberOfRetries: Float!
 }
 
 """The status of an payment of an invoice or return"""
@@ -61,7 +64,7 @@ enum PaymentStatus {
   OPEN
 
   """The payment is currently being processed"""
-  PROCCESSING
+  PENDING
 
   """The payment was successfully processed and the amount was transfered"""
   SUCCEEDED
@@ -162,6 +165,12 @@ enum OrderDirection {
 input PaymentFilter {
   """Current payment status"""
   status: PaymentStatus
+
+  """Timebox start for payment creation"""
+  from: DateTime!
+
+  """Timebox end for payment creation"""
+  to: DateTime!
 }
 
 """Ordering options for payment informations"""

@@ -6,19 +6,16 @@ import { FindPaymentArgs } from './dto/find-payments.dto';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
 import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
 import { PaymentInformationService } from 'src/payment-information/payment-information.service';
-import { PaymentProviderConnectionService } from 'src/payment-provider-connection/payment-provider-connection.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
-import { EventService } from 'src/events/events.service';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
+import { PaymentCreatedDto } from './dto/payment-created.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @InjectModel(Payment.name)
     private paymentModel: Model<Payment>,
-    private eventService: EventService,
-    private paymentInformationService: PaymentInformationService,
-    private paymentProviderConnectionService: PaymentProviderConnectionService,
+    private readonly paymentInformationService: PaymentInformationService,
     // initialize logger with service context
     private readonly logger: Logger,
   ) {}
@@ -149,11 +146,12 @@ export class PaymentService {
   }
 
   /**
-   * Creates a new payment entity and starts the payment process.
-   * @param order - The order for which to create a payment.
-   * @returns A Promise that resolves to the created Payment object.
+   * Creates a new payment entity and starts the payment process
+   * @param order - The order information.
+   * @returns A Promise that resolves to the created payment dto.
+   * @throws NotFoundException if the payment information is not found.
    */
-  async create(order: OrderDTO): Promise<Payment> {
+  async create(order: OrderDTO): Promise<PaymentCreatedDto> {
     // Extract the payment information from the order
     const { id, paymentInformationId, compensatableOrderAmount } = order;
     // get payment information
@@ -162,11 +160,9 @@ export class PaymentService {
 
     if (!paymentInformation) {
       // fatal error that requires complete order compensation
-      this.logger.error(
-        `{startPaymentProcess} Payment Information ${paymentInformationId} for order ${id} not found, throwing payment failed event`,
+      throw new NotFoundException(
+        `Payment Information ${paymentInformationId} not found`,
       );
-
-      this.eventService.publishPaymentFailedEvent(order);
     }
 
     // create payment
@@ -175,14 +171,7 @@ export class PaymentService {
       paymentInformation,
       compensatableOrderAmount,
     });
-
-    // transfer to payment method controller to handle payment process
-    this.paymentProviderConnectionService.startPaymentProcess(
-      paymentInformation.paymentMethod,
-      payment._id,
-    );
-
-    return payment;
+    return { payment, paymentInformation };
   }
 
   /**
