@@ -27,10 +27,6 @@ RUN npm run build
 # base image
 FROM node:18 AS production
 
-# Set node env to prod
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
 # Create app directory
 WORKDIR /usr/src/app
 
