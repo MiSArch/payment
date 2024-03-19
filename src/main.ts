@@ -6,13 +6,17 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { printSubgraphSchema } from '@apollo/subgraph';
 import { logger } from './shared/logger/winston.config';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   await app.listen(8080);
 
   // to enable request validation globally
   app.useGlobalPipes(new ValidationPipe());
+  app.useBodyParser('json', {
+    type: ['application/json', 'application/cloudevents+json'],
+  });
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 
