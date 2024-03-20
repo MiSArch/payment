@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
 import { PaymentModule } from './payment/payment.module';
@@ -14,6 +14,7 @@ import { HealthModule } from './health/health.module';
 import { EventModule } from './events/event.module';
 import { PaymentProviderConnectionModule } from './payment-provider-connection/payment-provider-connection.module';
 import { OpenOrdersModule } from './open-orders/open-orders.module';
+import { RawBodyMiddleware } from './shared/utils/raw.middleware';
 
 @Module({
   imports: [
@@ -46,4 +47,8 @@ import { OpenOrdersModule } from './open-orders/open-orders.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RawBodyMiddleware).forRoutes('*');
+  }
+}
