@@ -7,6 +7,9 @@ type User
 {
   """The uuid identifier of the user"""
   id: UUID!
+
+  """A connection for an users payment informations."""
+  paymentInformations: PaymentInformationConnection
 }
 
 """A universally unique identifier compliant UUID Scalar"""

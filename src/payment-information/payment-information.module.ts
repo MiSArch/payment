@@ -6,6 +6,7 @@ import {
   PaymentInformation,
   PaymentInformationSchema,
 } from './entities/payment-information.entity';
+import { UserResolver } from './user.resolver';
 
 /**
  * Module for handling payment information.
@@ -16,7 +17,12 @@ import {
       { name: PaymentInformation.name, schema: PaymentInformationSchema },
     ]),
   ],
-  providers: [PaymentInformationResolver, PaymentInformationService, Logger],
+  providers: [
+    PaymentInformationResolver,
+    UserResolver,
+    PaymentInformationService,
+    Logger,
+  ],
   exports: [PaymentInformationService],
 })
 export class PaymentInformationModule {}
