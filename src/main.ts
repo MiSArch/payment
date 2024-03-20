@@ -9,6 +9,11 @@ import { logger } from './shared/logger/winston.config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { LoggingValidationPipe } from './shared/pipes/logging-validation.pipe';
 
+
+/**
+ * Initializes and starts the application.
+ * @returns {Promise<void>} A promise that resolves when the application is running.
+ */
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // to enable request validation globally

@@ -10,6 +10,9 @@ import { InvoiceService } from './payment-processors/invoice.service';
 import { PaymentInformationModule } from 'src/payment-information/payment-information.module';
 import { ConnectorService } from './connector.service';
 
+/**
+ * Module for handling payment provider connections.
+ */
 @Module({
   imports: [
     PaymentModule,

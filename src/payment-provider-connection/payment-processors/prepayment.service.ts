@@ -7,6 +7,9 @@ import { Cron } from '@nestjs/schedule';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { xDaysBackFromNow } from 'src/shared/utils/functions.utils';
 
+/**
+ * Service for handling invoice payments.
+ */
 @Injectable()
 export class PrepaymentService {
   constructor(

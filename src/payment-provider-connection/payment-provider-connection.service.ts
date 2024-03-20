@@ -11,6 +11,9 @@ import { CreditCardService } from './payment-processors/credit-card.service';
 import { InvoiceService } from './payment-processors/invoice.service';
 import { PrepaymentService } from './payment-processors/prepayment.service';
 
+/**
+ * Service for handling payment provider connections.
+ */
 @Injectable()
 export class PaymentProviderConnectionService {
   constructor(
@@ -22,6 +25,15 @@ export class PaymentProviderConnectionService {
     private readonly logger: Logger,
   ) {}
 
+  
+  /**
+   * Starts the payment process for the specified payment method and id.
+   * 
+   * @param paymentMethod - The payment method to use for the payment process.
+   * @param id - The id associated with the payment.
+   * @returns A promise that resolves when the payment process is started.
+   * @throws {NotImplementedException} If the controller for the payment method is not implemented.
+   */
   startPaymentProcess(paymentMethod: PaymentMethod, id: string): Promise<any> {
     this.logger.log(
       `{startPaymentProcess} Starting payment for paymentMethod: ${paymentMethod}`,
@@ -41,6 +53,15 @@ export class PaymentProviderConnectionService {
     }
   }
 
+  /**
+   * Updates the payment status for the specified payment method and id.
+   * 
+   * @param id - The id associated with the payment.
+   * @param status - The status to update the payment to.
+   * @returns A promise that resolves when the payment status is updated.
+   * @throws {NotFoundException} If the payment is not found.
+   * @throws {NotImplementedException} If the controller for the payment method is not implemented.
+   */
   async updatePaymentStatus(id: string, status: PaymentStatus): Promise<any> {
     // get the payment method from the payment
     const paymentInfo = await this.paymentInformationService.findById(id);

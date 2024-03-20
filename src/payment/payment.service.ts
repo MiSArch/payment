@@ -10,6 +10,9 @@ import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
 import { PaymentCreatedDto } from './dto/payment-created.dto';
 
+/**
+ * Service for handling payments.
+ */
 @Injectable()
 export class PaymentService {
   constructor(

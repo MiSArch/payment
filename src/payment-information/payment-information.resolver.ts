@@ -20,6 +20,9 @@ import { FindPaymentInformationsArgs } from './dto/find-payment-informations.arg
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 
+/**
+ * Resolver for PaymentInformation objects.
+ */
 @Resolver(() => PaymentInformation)
 export class PaymentInformationResolver {
   constructor(
@@ -49,7 +52,7 @@ export class PaymentInformationResolver {
   @Roles(Role.SITE_ADMIN, Role.EMPLOYEE)
   @Query(() => PaymentInformationConnection, {
     name: 'paymentInformations',
-    description: ' Retrieves all payment informations matching the fitler',
+    description: ' Retrieves all payment informations matching the filter',
   })
   find(
     @Args() args: FindPaymentInformationsArgs,

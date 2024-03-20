@@ -5,6 +5,9 @@ import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { ConnectorService } from '../connector.service';
 
+/**
+ * Service for handling credit card payments.
+ */
 @Injectable()
 export class CreditCardService {
   constructor(
@@ -16,6 +19,11 @@ export class CreditCardService {
     private readonly eventService: EventService,
   ) {}
 
+  /**
+   * Creates a credit card payment for the specified id.
+   * @param id - The id of the payment.
+   * @returns A Promise that resolves to the created payment.
+   */
   async create(id: string): Promise<any> {
     this.logger.log(`{create} Creating credit card payment for id: ${id}`);
     // emit enabled event since everything necessary is in place
@@ -28,6 +36,12 @@ export class CreditCardService {
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
   }
 
+  /**
+   * Updates the credit card payment status for the specified payment id.
+   * @param paymentId - The id of the payment.
+   * @param status - The status to update the payment to.
+   * @returns A Promise that resolves to the updated payment.
+   */
   async update(paymentId: string, status: PaymentStatus): Promise<any> {
     this.logger.log(
       `{update} Updating credit card payment status for id: ${paymentId} to: ${status}`,

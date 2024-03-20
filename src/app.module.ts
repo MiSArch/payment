@@ -15,6 +15,9 @@ import { EventModule } from './events/event.module';
 import { PaymentProviderConnectionModule } from './payment-provider-connection/payment-provider-connection.module';
 import { OpenOrdersModule } from './open-orders/open-orders.module';
 
+/**
+ * The main module of the application.
+ */
 @Module({
   imports: [
     // For Configuration from environment variables

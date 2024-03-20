@@ -16,6 +16,9 @@ import { FindPaymentArgs } from './dto/find-payments.dto';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
+/**
+ * Resolver for Payment objects.
+ */
 @Resolver(() => Payment)
 export class PaymentResolver {
   constructor(

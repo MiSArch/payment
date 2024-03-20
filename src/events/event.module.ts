@@ -7,6 +7,9 @@ import { EventService } from './events.service';
 import { PaymentProviderConnectionModule } from 'src/payment-provider-connection/payment-provider-connection.module';
 import { OpenOrdersModule } from 'src/open-orders/open-orders.module';
 
+/**
+ * Module for handling events.
+ */
 @Module({
   imports: [
     forwardRef(() => PaymentProviderConnectionModule),

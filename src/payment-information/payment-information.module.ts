@@ -7,6 +7,9 @@ import {
   PaymentInformationSchema,
 } from './entities/payment-information.entity';
 
+/**
+ * Module for handling payment information.
+ */
 @Module({
   imports: [
     MongooseModule.forFeature([

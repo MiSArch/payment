@@ -10,6 +10,9 @@ import { FindPaymentInformationsArgs } from './dto/find-payment-informations.arg
 import { CurrentUserRoles } from 'src/shared/utils/user-roles.decorator';
 import { CurrentUser } from 'src/shared/utils/user.decorator';
 
+/**
+ * Resolver for Foreign User objects.
+ */
 @Resolver(() => User)
 export class UserResolver {
   constructor(

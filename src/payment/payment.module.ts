@@ -5,6 +5,9 @@ import { PaymentInformationModule } from 'src/payment-information/payment-inform
 import { MongooseModule } from '@nestjs/mongoose';
 import { Payment, PaymentSchema } from './entities/payment.entity';
 
+/**
+ * Module for handling payments.
+ */
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),

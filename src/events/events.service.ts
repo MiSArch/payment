@@ -15,6 +15,9 @@ import { OpenOrdersService } from 'src/open-orders/open-orders.service';
 import { OpenOrder } from 'src/open-orders/entities/open-order.entity';
 import { PaymentProviderConnectionService } from 'src/payment-provider-connection/payment-provider-connection.service';
 
+/**
+ * Service for handling events.
+ */
 @Injectable()
 export class EventService {
   constructor(

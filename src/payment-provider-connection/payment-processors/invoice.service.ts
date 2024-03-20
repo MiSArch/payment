@@ -7,6 +7,9 @@ import { Cron } from '@nestjs/schedule';
 import { xDaysBackFromNow } from 'src/shared/utils/functions.utils';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 
+/**
+ * Service for handling invoice payments.
+ */
 @Injectable()
 export class InvoiceService {
   constructor(

@@ -1,10 +1,20 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 
+/**
+ * Service for connecting to the payment provider.
+ */
 @Injectable()
 export class ConnectorService {
-  constructor(private readonly httpService: HttpService) {}
+  private simulationEndpoint: string;
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,  
+  ) {
+    this.simulationEndpoint = this.configService.get<string>('SIMULATION_URL');
+  }
 
   /**
    * Sends a request to the specified endpoint with the provided data.
@@ -16,7 +26,7 @@ export class ConnectorService {
   async send(endpoint: string, data: any): Promise<AxiosResponse> {
     try {
       const response = await this.httpService
-        .post(`http://localhost:7000/${endpoint}`, data)
+        .post(`${this.simulationEndpoint}/${endpoint}`, data)
         .toPromise(); // Convert Observable to Promise
       if (response.status !== 200) {
         console.error(

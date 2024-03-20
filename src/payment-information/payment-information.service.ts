@@ -15,6 +15,9 @@ import { FindPaymentInformationsArgs } from './dto/find-payment-informations.arg
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 
+/**
+ * Service for handling payment information.
+ */
 @Injectable()
 export class PaymentInformationService {
   constructor(
