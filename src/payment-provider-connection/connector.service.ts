@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
 
 @Injectable()
 export class ConnectorService {
@@ -14,11 +13,15 @@ export class ConnectorService {
    * @returns An Observable that emits the AxiosResponse object.
    * @throws An error if the request fails.
    */
-  async send(endpoint: string, data: any): Promise<Observable<AxiosResponse>> {
+  async send(endpoint: string, data: any): Promise<AxiosResponse> {
     try {
-      const response = await this.httpService.post(`http://localhost:7000/${endpoint}`, data).toPromise();
+      const response = await this.httpService
+        .post(`http://localhost:7000/${endpoint}`, data)
+        .toPromise(); // Convert Observable to Promise
       if (response.status !== 200) {
-        console.error(`Request to ${endpoint} failed with status ${response.status}`);
+        console.error(
+          `Request to ${endpoint} failed with status ${response.status}`,
+        );
       }
       return response;
     } catch (error) {
