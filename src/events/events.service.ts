@@ -28,17 +28,15 @@ export class EventService {
   ) {}
 
   async startPaymentProcess(order: OrderDTO): Promise<any> {
-    this.logger.log(
-      `Received successfull discount validation event for order with id: ${order.id}`,
-    );
-
-    // Temporarily store the order context for later events
-    this.openOrdersService.create(order.id, order);
+    this.logger.log(`Starting payment process for order with id: ${order.id}`);
 
     // Call the payment service to start the payment process
     try {
       const { payment, paymentInformation } =
         await this.paymentService.create(order);
+
+        // Temporarily store the order context for later events
+        await this.openOrdersService.create(payment.id, order);
 
       // transfer to payment method controller to handle payment process
       this.paymentProviderConnectionService.startPaymentProcess(
@@ -46,11 +44,10 @@ export class EventService {
         payment._id,
       );
     } catch (error) {
-      const { id, paymentInformationId } = order;
-      this.logger.error(
-        `{startPaymentProcess} Fatal error: Payment Information ${paymentInformationId} for order ${id} not found`,
-      );
+      this.logger.error(`{startPaymentProcess} Fatal error: ${error}`);
 
+      // remove the open order
+      this.openOrdersService.delete(order.id);
       // publish payment error event
       this.publishPaymentFailedEvent(order);
     }

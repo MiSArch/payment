@@ -41,10 +41,11 @@ export class EventController {
    */
   @Post('order-validation-succeeded')
   async orderValidationSucceeded(
-    @Body('data') event: ValidationSucceededDTO,
+    @Body() event: ValidationSucceededDTO,
   ): Promise<void> {
     // Extract the order context from the event
     const { order } = event;
+    this.logger.log(`Received discount order validation success event for order "${order.id}"`);
 
     try {
       this.eventService.startPaymentProcess(order);

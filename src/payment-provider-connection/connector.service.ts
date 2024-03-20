@@ -12,8 +12,18 @@ export class ConnectorService {
    * @param endpoint The endpoint to send the request to.
    * @param data The data to send with the request.
    * @returns An Observable that emits the AxiosResponse object.
+   * @throws An error if the request fails.
    */
-  send(endpoint: string, data: any): Observable<AxiosResponse> {
-    return this.httpService.post(`http://localhost:7000/${endpoint}`, data);
+  async send(endpoint: string, data: any): Promise<Observable<AxiosResponse>> {
+    try {
+      const response = await this.httpService.post(`http://localhost:7000/${endpoint}`, data).toPromise();
+      if (response.status !== 200) {
+        console.error(`Request to ${endpoint} failed with status ${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      console.error(`Error sending request to ${endpoint}:`, error);
+      throw error;
+    }
   }
 }

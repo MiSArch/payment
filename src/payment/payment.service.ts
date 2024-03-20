@@ -154,6 +154,7 @@ export class PaymentService {
   async create(order: OrderDTO): Promise<PaymentCreatedDto> {
     // Extract the payment information from the order
     const { id, paymentInformationId, compensatableOrderAmount } = order;
+    this.logger.log(`{create} Creating payment for order "${id}" with paymentInformationId "${paymentInformationId} and amount ${compensatableOrderAmount}`);
     // get payment information
     const paymentInformation =
       await this.paymentInformationService.findById(paymentInformationId);
@@ -169,7 +170,7 @@ export class PaymentService {
     const payment = await this.paymentModel.create({
       id,
       paymentInformation,
-      compensatableOrderAmount,
+      totalAmount: compensatableOrderAmount,
     });
     return { payment, paymentInformation };
   }

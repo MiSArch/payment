@@ -37,12 +37,12 @@ export class Payment {
   })
   totalAmount: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: PaymentStatus.OPEN })
   @Field(() => PaymentStatus, {
     description: 'Status of the payment',
     defaultValue: PaymentStatus.OPEN,
   })
-  status: PaymentStatus = PaymentStatus.OPEN;
+  status: PaymentStatus;
 
   @Prop({ required: true })
   @Field(() => PaymentInformation, { description: 'Used Payment Information' })
