@@ -157,7 +157,9 @@ export class PaymentService {
   async create(order: OrderDTO): Promise<PaymentCreatedDto> {
     // Extract the payment information from the order
     const { id, paymentInformationId, compensatableOrderAmount } = order;
-    this.logger.log(`{create} Creating payment for order "${id}" with paymentInformationId "${paymentInformationId} and amount ${compensatableOrderAmount}`);
+    this.logger.log(
+      `{create} Creating payment for order "${id}" with paymentInformationId "${paymentInformationId} and amount ${compensatableOrderAmount}`,
+    );
     // get payment information
     const paymentInformation =
       await this.paymentInformationService.findById(paymentInformationId);
@@ -215,7 +217,10 @@ export class PaymentService {
    * @param filter - The filter object containing the criteria for the query.
    * @returns The query object.
    */
-  buildQuery(filter: any): any {
+  buildQuery(filter: { status?: string; from?: Date; to?: Date }): {
+    status: string;
+    createdAt: { $gte: Date; $lte: Date };
+  } {
     const query: any = {};
     if (filter.status) {
       query.status = filter.status;
