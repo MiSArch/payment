@@ -22,6 +22,7 @@ export class UserResolver {
 
   @Roles(Role.EMPLOYEE, Role.SITE_ADMIN, Role.BUYER)
   @ResolveField(() => PaymentInformationConnection, {
+    name: 'paymentInformations',
     description: 'A connection for an users payment informations.',
     nullable: true,
   })

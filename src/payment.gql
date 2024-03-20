@@ -1,6 +1,17 @@
 extend schema
   @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@composeDirective", "@extends", "@external", "@inaccessible", "@interfaceObject", "@key", "@override", "@provides", "@requires", "@shareable", "@tag"])
 
+"""Foreign type User"""
+type User
+  @key(fields: "id")
+{
+  """The uuid identifier of the user"""
+  id: UUID!
+}
+
+"""A universally unique identifier compliant UUID Scalar"""
+scalar UUID
+
 """A stored payment information of an user"""
 type PaymentInformation
   @key(fields: "id")
@@ -13,10 +24,10 @@ type PaymentInformation
 
   """The details for the User to identify the payment method"""
   publicMethodDetails: JSONObject
-}
 
-"""A universally unique identifier compliant UUID Scalar"""
-scalar UUID
+  """The user who owns the payment information"""
+  user: User!
+}
 
 """The supported payment methods"""
 enum PaymentMethod {
@@ -121,7 +132,7 @@ type Query {
     filter: PaymentFilter
   ): PaymentConnection!
 
-  """ Retrieves all payment informations matching the fitler"""
+  """ Retrieves all payment informations matching the filter"""
   paymentInformations(
     """Number of items to skip"""
     skip: Int = 0
