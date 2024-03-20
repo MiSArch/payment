@@ -12,7 +12,7 @@ type PaymentInformation
   paymentMethod: PaymentMethod!
 
   """The details for the User to identify the payment method"""
-  publicMethodDetails: JSONObject!
+  publicMethodDetails: JSONObject
 }
 
 """A universally unique identifier compliant UUID Scalar"""
