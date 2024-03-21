@@ -19,7 +19,6 @@ services:
     environment:
       DATABASE_URI: mongodb://payment-db:27017
       DATABASE_NAME: misarch
-      SIMULATION_URL: http://localhost:7000
     depends_on:
       - payment-db
   payment-db:

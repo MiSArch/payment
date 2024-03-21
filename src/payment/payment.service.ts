@@ -32,14 +32,14 @@ export class PaymentService {
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
     const { first, skip, orderBy, filter } = args;
+    // build query
+    const query = this.buildQuery(filter);
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
-        filter,
+        query,
       )}`,
     );
 
-    // build query
-    const query = this.buildQuery(filter);
 
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
@@ -114,8 +114,9 @@ export class PaymentService {
    * @returns A promise that resolves to the count of payment records.
    */
   async count(filter: PaymentFilter): Promise<number> {
-    this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
-    const count = await this.paymentModel.countDocuments(filter);
+    const filterQuery = this.buildQuery(filter);
+    this.logger.debug(`{count} query: ${JSON.stringify(filterQuery)}`);
+    const count = await this.paymentModel.countDocuments(filterQuery);
 
     this.logger.debug(`{count} returning ${count}`);
 
@@ -220,7 +221,7 @@ export class PaymentService {
    */
   buildQuery(filter: PaymentFilter): {
     status?: string;
-    paymentInformation?: { id: string };
+    paymentInformation?: { _id: string, paymentMethod?: string};
     paymentMethod?: string;
     createdAt?: { $gte: Date; $lte: Date };
   } {
@@ -233,11 +234,13 @@ export class PaymentService {
     }
 
     if (filter.paymentInformationId) {
-      query.paymentInformation = { id: filter.paymentInformationId };
+      query.paymentInformation = {};
+      query.paymentInformation._id = filter.paymentInformationId;
     }
 
     if (filter.paymentMethod) {
-      query.paymentMethod = filter.paymentMethod;
+      query.paymentInformation = query.paymentInformation || {}
+      query.paymentInformation.paymentMethod = filter.paymentMethod;
     }
 
     if (filter.from) {

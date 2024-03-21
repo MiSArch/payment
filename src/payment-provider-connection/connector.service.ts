@@ -28,7 +28,7 @@ export class ConnectorService {
     try {
       if(!this.simulationEndpoint) {
         this.logger.error('Simulation URL not set');
-        return Promise.reject('Simulation URL not set');
+        return Promise.resolve('Simulation URL not set');
       }
       const response = await this.httpService
         .post(`${this.simulationEndpoint}/${endpoint}`, data)

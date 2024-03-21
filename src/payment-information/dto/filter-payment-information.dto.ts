@@ -1,4 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { User } from 'src/graphql-types/user.entity';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
@@ -8,7 +9,7 @@ export class PaymentInformationFilter {
     description: 'Connected user id',
     nullable: true,
   })
-  user?: string;
+  user?: User;
 
   @Field(() => PaymentMethod, {
     description: 'Linked payment method',

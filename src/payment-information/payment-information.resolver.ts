@@ -117,7 +117,7 @@ export class PaymentInformationResolver {
   user(@Parent() paymentInformation: PaymentInformation) {
     this.logger.log(`Resolving user for ${paymentInformation}`);
 
-    return { __typename: 'User', id: paymentInformation.user };
+    return { __typename: 'User', id: paymentInformation.user.id };
   }
 
   @ResolveField(() => PaymentConnection, {
