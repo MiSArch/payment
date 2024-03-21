@@ -15,6 +15,9 @@ import { FindPaymentInformationsArgs } from './dto/find-payment-informations.arg
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 
+/**
+ * Service for handling payment information.
+ */
 @Injectable()
 export class PaymentInformationService {
   constructor(
@@ -233,5 +236,21 @@ export class PaymentInformationService {
       `{delete} returning ${JSON.stringify(deletedPaymentInfo)}`,
     );
     return deletedPaymentInfo;
+  }
+
+  /**
+   * Adds default payment informations (prepayment and invoice) for an user.
+   *
+   * @param user - The user for whom to add the default payment informations.
+   * @returns A Promise that resolves to void.
+   */
+  async addDefaultPaymentInformations(user: User): Promise<void> {
+    this.logger.log(`{addDefaultPaymentInformations} for user: ${user}`);
+
+    // create default payment informations for the user
+    await this.createPaymentInformation(PaymentMethod.PREPAYMENT, user);
+    await this.createPaymentInformation(PaymentMethod.INVOICE, user);
+
+    return;
   }
 }

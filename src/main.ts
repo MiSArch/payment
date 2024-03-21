@@ -1,21 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { printSubgraphSchema } from '@apollo/subgraph';
 import { logger } from './shared/logger/winston.config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { LoggingValidationPipe } from './shared/pipes/logging-validation.pipe';
 
+
+/**
+ * Initializes and starts the application.
+ * @returns {Promise<void>} A promise that resolves when the application is running.
+ */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(8080);
-
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // to enable request validation globally
-  app.useGlobalPipes(new ValidationPipe());
-
-  console.log(`Application is running on: ${await app.getUrl()}`);
-
+  app.useGlobalPipes(new LoggingValidationPipe());
+  app.useBodyParser('json', {
+    type: ['application/json', 'application/cloudevents+json'],
+  });
+  
+  
+  await app.listen(8080);
+  
+  // logging
+  app.useLogger(logger);
+  
+  
   // workaround to generate the schema file with federation directives
   const { schema } = app.get(GraphQLSchemaHost);
   writeFileSync(
@@ -23,7 +35,6 @@ async function bootstrap() {
     printSubgraphSchema(schema),
   );
 
-  // logging
-  app.useLogger(logger);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

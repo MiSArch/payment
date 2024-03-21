@@ -5,7 +5,7 @@ export enum PaymentStatus {
   // The payment was created but not yet processed
   OPEN = 'OPEN',
   // The payment is currently being processed
-  PROCCESSING = 'PROCESSING',
+  PENDING = 'PENDING',
   // The payment was successfully processed
   SUCCEEDED = 'SUCCEEDED',
   // The payment processing failed indefinetely
@@ -22,7 +22,7 @@ registerEnumType(PaymentStatus, {
     OPEN: {
       description: 'The payment was created but not yet processed',
     },
-    PROCCESSING: {
+    PENDING: {
       description: 'The payment is currently being processed',
     },
     SUCCEEDED: {

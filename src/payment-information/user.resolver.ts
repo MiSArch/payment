@@ -1,4 +1,4 @@
-import { Resolver, ResolveField, Parent, Info } from '@nestjs/graphql';
+import { Resolver, ResolveField, Parent, Info, Args } from '@nestjs/graphql';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
@@ -10,20 +10,24 @@ import { FindPaymentInformationsArgs } from './dto/find-payment-informations.arg
 import { CurrentUserRoles } from 'src/shared/utils/user-roles.decorator';
 import { CurrentUser } from 'src/shared/utils/user.decorator';
 
+/**
+ * Resolver for Foreign User objects.
+ */
 @Resolver(() => User)
 export class UserResolver {
   constructor(
-    private readonly paymentInforamtionService: PaymentInformationService,
+    private readonly paymentInformationService: PaymentInformationService,
     private readonly logger: Logger,
   ) {}
 
-  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN, Role.BUYER)
   @ResolveField(() => PaymentInformationConnection, {
     description: 'A connection for an users payment informations.',
     nullable: true,
   })
+  @Roles(Role.BUYER, Role.SITE_ADMIN, Role.EMPLOYEE)
   async paymentInformations(
     @Parent() user: User,
+    @Args() args: FindPaymentInformationsArgs,
     @Info() info,
     @CurrentUser() currentUser: User,
     @CurrentUserRoles() roles: Role[],
@@ -39,7 +43,7 @@ export class UserResolver {
       currentUser.id.toString() !== user.id.toString()
     ) {
       this.logger.debug(
-        `{paymentInformations} User %${currentUser.id} not authorized to view payment informations for user %${user.id}`,
+        `{paymentInformations} User ${currentUser.id} not authorized to view payment informations for user ${user.id}`,
       );
       // throw not found error if the user is not authorized to access the payment information
       throw new UnauthorizedException(
@@ -49,11 +53,9 @@ export class UserResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-    // build default FindProductItemArgs
-    const args = new FindPaymentInformationsArgs();
     // filter for correct user
-    args.filter = { user: user.id };
+    const filter = { ...args.filter, user: { id: user.id }};
 
-    return this.paymentInforamtionService.buildConnection(query, args);
+    return this.paymentInformationService.buildConnection(query, { ...args, filter });
   }
 }

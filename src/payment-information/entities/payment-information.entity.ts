@@ -34,6 +34,7 @@ export class PaymentInformation {
   @Prop({ required: false, type: Object })
   @Field(() => GraphQLJSONObject, {
     description: 'The details for the User to identify the payment method',
+    nullable: true,
   })
   publicMethodDetails?: object;
 
@@ -46,6 +47,9 @@ export class PaymentInformation {
   // It is not exposed via graphql since its just used internally
   @Prop({ required: true })
   @HideField()
+  @Field(() => User, {
+    description: 'The user who owns the payment information',
+  })
   user: User;
 }
 
