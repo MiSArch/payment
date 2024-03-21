@@ -30,13 +30,15 @@ import { OpenOrdersModule } from './open-orders/open-orders.module';
         federation: 2,
       },
       context: ({ req }) => ({ request: req }),
+      // necessary to use guards on @ResolveField with drawbacks on performance
+      fieldResolverEnhancers: ['guards'],
     }),
-    PaymentModule,
     // For data persistence
     MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
     PaymentInformationModule,
+    PaymentModule,
     HealthModule,
     EventModule,
     PaymentProviderConnectionModule,

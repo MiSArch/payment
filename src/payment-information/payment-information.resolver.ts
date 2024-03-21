@@ -4,12 +4,14 @@ import {
   Mutation,
   Args,
   ResolveReference,
+  ResolveField,
   Info,
+  Parent,
 } from '@nestjs/graphql';
 import { PaymentInformationService } from './payment-information.service';
 import { PaymentInformation } from './entities/payment-information.entity';
 import { CreateCreditCardInformationInput } from './dto/create-creadit-card-information.input';
-import { Logger } from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { CurrentUser } from 'src/shared/utils/user.decorator';
 import { User } from 'src/graphql-types/user.entity';
@@ -19,6 +21,9 @@ import { CurrentUserRoles } from 'src/shared/utils/user-roles.decorator';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
+import { FindPaymentArgs } from 'src/payment/dto/find-payments.dto';
+import { PaymentService } from 'src/payment/payment.service';
+import { PaymentConnection } from 'src/graphql-types/payment.connection';
 
 /**
  * Resolver for PaymentInformation objects.
@@ -27,6 +32,7 @@ import { PaymentInformationConnection } from 'src/graphql-types/payment-informat
 export class PaymentInformationResolver {
   constructor(
     private readonly paymentInformationService: PaymentInformationService,
+    private readonly paymentService: PaymentService,
     // initialize logger with resolver context
     private readonly logger: Logger,
   ) {}
@@ -61,7 +67,6 @@ export class PaymentInformationResolver {
     this.logger.log(
       `Resolving paymentInformations for ${JSON.stringify(args)}`,
     );
-
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
 
@@ -101,5 +106,57 @@ export class PaymentInformationResolver {
     this.logger.log(`Resolving reference for ${reference.id}`);
 
     return this.paymentInformationService.findById(reference.id);
+  }
+
+  /**
+   * Resolves the user for the given payment information.
+   * @param paymentInformation The payment information object.
+   * @returns The user object.
+  */
+  @ResolveField()
+  user(@Parent() paymentInformation: PaymentInformation) {
+    this.logger.log(`Resolving user for ${paymentInformation}`);
+
+    return { __typename: 'User', id: paymentInformation.user };
+  }
+
+  @ResolveField(() => PaymentConnection, {
+    description: 'A connection for an users payments made with a payment information.',
+    nullable: true,
+  })
+  @Roles(Role.BUYER, Role.SITE_ADMIN, Role.EMPLOYEE)
+  async payments(
+    @Parent() paymentInformation: PaymentInformation,
+    @Args() args: FindPaymentArgs,
+    @Info() info,
+    @CurrentUser() currentUser: User,
+    @CurrentUserRoles() roles: Role[],
+  ): Promise<PaymentConnection> {
+    this.logger.log(`Resolving Payments for Payment Information: ${paymentInformation.id}`);
+    const { user } = paymentInformation
+    // roles authorized to access foreign payments
+    const authorizedRoles = [Role.EMPLOYEE, Role.SITE_ADMIN];
+
+    // check if user is authorized to view payments
+    if (
+      !roles.some((role) => authorizedRoles.includes(role)) &&
+      currentUser.id.toString() !== user.id.toString()
+    ) {
+      this.logger.debug(
+        `{payments} User ${currentUser.id} not authorized to view payments for user %${user.id}`,
+      );
+      // throw not found error if the user is not authorized to access the payment information
+      throw new UnauthorizedException(
+        `User not authorized to access foreign Payments}`,
+      );
+    }
+
+    // get query keys to avoid unnecessary workload
+    const query = queryKeys(info);
+    // filter for correct payment Information
+    const filter = { ...args.filter, paymentInformationId: paymentInformation.id };
+
+
+    return this.paymentService.buildConnection(query, { ...args, filter});
   }
 }

@@ -9,6 +9,7 @@ import { PaymentInformationService } from 'src/payment-information/payment-infor
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
 import { PaymentCreatedDto } from './dto/payment-created.dto';
+import { PaymentFilter } from './dto/filter-payment.input';
 
 /**
  * Service for handling payments.
@@ -29,8 +30,8 @@ export class PaymentService {
    * @param filter - The filter to apply when retrieving payment.
    * @returns A promise that resolves to an array of Payment objects.
    */
-  async find(args: FindPaymentArgs, filter: any): Promise<Payment[]> {
-    const { first, skip, orderBy } = args;
+  async find(args: FindPaymentArgs): Promise<Payment[]> {
+    const { first, skip, orderBy, filter } = args;
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
         filter,
@@ -77,7 +78,7 @@ export class PaymentService {
       }
 
       // get nodes according to args and filter
-      connection.nodes = await this.find(args, args.filter);
+      connection.nodes = await this.find(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
@@ -112,7 +113,7 @@ export class PaymentService {
    * @param filter - The filter to apply to the count operation.
    * @returns A promise that resolves to the count of payment records.
    */
-  async count(filter: any): Promise<number> {
+  async count(filter: PaymentFilter): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.paymentModel.countDocuments(filter);
 
@@ -187,7 +188,7 @@ export class PaymentService {
    * @returns A Promise that resolves to the updated Payment object.
    * @throws NotFoundException if the payment with the specified id is not found.
    */
-  async updatePaymentStatus(_id: string, status: PaymentStatus): Promise<any> {
+  async updatePaymentStatus(_id: string, status: PaymentStatus): Promise<Payment> {
     this.logger.log(
       `{updatePaymentStatus} Updating payment status for id: "${_id}" to ${status}`,
     );
@@ -217,13 +218,26 @@ export class PaymentService {
    * @param filter - The filter object containing the criteria for the query.
    * @returns The query object.
    */
-  buildQuery(filter: { status?: string; from?: Date; to?: Date }): {
-    status: string;
-    createdAt: { $gte: Date; $lte: Date };
+  buildQuery(filter: PaymentFilter): {
+    status?: string;
+    paymentInformation?: { id: string };
+    paymentMethod?: string;
+    createdAt?: { $gte: Date; $lte: Date };
   } {
     const query: any = {};
+
+    if (!filter) { return query }
+
     if (filter.status) {
       query.status = filter.status;
+    }
+
+    if (filter.paymentInformationId) {
+      query.paymentInformation = { id: filter.paymentInformationId };
+    }
+
+    if (filter.paymentMethod) {
+      query.paymentMethod = filter.paymentMethod;
     }
 
     if (filter.from) {

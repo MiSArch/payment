@@ -41,7 +41,6 @@ export class RolesGuard implements CanActivate {
 
     // add user entity to request
     ctx.getContext().req.user = authorizedUser;
-
     // check if user has required roles
     const roles = authorizedUser.roles;
     return requiredRoles.some((role) => roles.includes(role));

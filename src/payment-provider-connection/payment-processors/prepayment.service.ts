@@ -68,11 +68,12 @@ export class PrepaymentService {
     const to = xDaysBackFromNow(7);
     // get open payments, that are at at least 6 days old
     const openPayments = await this.paymentService.find(
-      {},
       {
-        status: PaymentStatus.PENDING,
-        paymentMethod: PaymentMethod.PREPAYMENT,
-        to,
+        filter: {
+          status: PaymentStatus.PENDING,
+          paymentMethod: PaymentMethod.PREPAYMENT,
+          to,
+        }
       },
     );
 

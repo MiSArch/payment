@@ -66,11 +66,12 @@ export class InvoiceService {
     const to = xDaysBackFromNow(30);
     // get open payments, that are at at least 6 days old
     const openPayments = await this.paymentService.find(
-      {},
       {
-        status: PaymentStatus.PENDING,
-        paymentMethod: PaymentMethod.INVOICE,
-        to,
+        filter: {
+          status: PaymentStatus.PENDING,
+          paymentMethod: PaymentMethod.INVOICE,
+          to,
+        }
       },
     );
 

@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 
@@ -10,6 +10,7 @@ import { AxiosResponse } from 'axios';
 export class ConnectorService {
   private simulationEndpoint: string;
   constructor(
+    private readonly logger: Logger,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,  
   ) {
@@ -25,17 +26,21 @@ export class ConnectorService {
    */
   async send(endpoint: string, data: any): Promise<AxiosResponse> {
     try {
+      if(!this.simulationEndpoint) {
+        this.logger.error('Simulation URL not set');
+        return Promise.reject('Simulation URL not set');
+      }
       const response = await this.httpService
         .post(`${this.simulationEndpoint}/${endpoint}`, data)
         .toPromise(); // Convert Observable to Promise
       if (response.status !== 200) {
-        console.error(
+        this.logger.error(
           `Request to ${endpoint} failed with status ${response.status}`,
         );
       }
       return response;
     } catch (error) {
-      console.error(`Error sending request to ${endpoint}:`, error);
+      this.logger.error(`Error sending request to ${endpoint}:`, error);
       throw error;
     }
   }
