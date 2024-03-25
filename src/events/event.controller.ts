@@ -41,7 +41,7 @@ export class EventController {
    */
   @Post('order-validation-succeeded')
   async orderValidationSucceeded(
-    @Body() event: ValidationSucceededDTO,
+    @Body('data') event: ValidationSucceededDTO,
   ): Promise<void> {
     // Extract the order context from the event
     const { order } = event;
