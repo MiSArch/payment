@@ -16,8 +16,10 @@ jobs:
           repository: "misarch/schemas"
           path: "schemas"
       - name: Save graphql schemas
-        run: |
-          cp ./src/payment.gql ./schemas/payment.graphql
+        uses: misarch/graphql-schema-transform@v1
+        with:
+          schema: src/payment.gql
+          target: schemas/payment.graphql
       - uses: peter-evans/create-pull-request@v5
         with:
           path: ./schemas
