@@ -221,7 +221,7 @@ export class PaymentService {
    */
   buildQuery(filter: PaymentFilter): {
     status?: string;
-    paymentInformation?: { _id: string, paymentMethod?: string};
+    paymentInformation?: string;
     paymentMethod?: string;
     createdAt?: { $gte: Date; $lte: Date };
   } {
@@ -234,13 +234,11 @@ export class PaymentService {
     }
 
     if (filter.paymentInformationId) {
-      query.paymentInformation = {};
-      query.paymentInformation._id = filter.paymentInformationId;
+      query.paymentInformation = filter.paymentInformationId;
     }
 
     if (filter.paymentMethod) {
-      query.paymentInformation = query.paymentInformation || {}
-      query.paymentInformation.paymentMethod = filter.paymentMethod;
+      query.paymentMethod = filter.paymentMethod;
     }
 
     if (filter.from) {
