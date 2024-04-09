@@ -24,6 +24,7 @@ import { PaymentInformationConnection } from 'src/graphql-types/payment-informat
 import { FindPaymentArgs } from 'src/payment/dto/find-payments.dto';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
+import { PaymentFilter } from 'src/payment/dto/filter-payment.input';
 
 /**
  * Resolver for PaymentInformation objects.
@@ -153,9 +154,8 @@ export class PaymentInformationResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-    // filter for correct payment Information
-    const filter = { ...args.filter, paymentInformationId: paymentInformation.id };
-
+    // extend filter to retrieve associated payments for payment information
+    const filter: PaymentFilter = { ...args.filter, paymentInformationId: paymentInformation.id };
 
     return this.paymentService.buildConnection(query, { ...args, filter});
   }

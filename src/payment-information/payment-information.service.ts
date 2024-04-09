@@ -54,7 +54,7 @@ export class PaymentInformationService {
       paymentMethod: PaymentMethod.CREDIT_CARD,
       publicMethodDetails: publicDetails,
       secretMethodDetails: input,
-      user: user.id,
+      user: user,
     });
   }
 

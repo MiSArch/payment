@@ -44,9 +44,10 @@ export class Payment {
   })
   status: PaymentStatus;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Schema.Types.ObjectId, ref: 'PaymentInformation'})
   @Field(() => PaymentInformation, { description: 'Used Payment Information' })
-  paymentInformation: PaymentInformation;
+  // will be a string if the payment information is not populated
+  paymentInformation: PaymentInformation | string;
 
   @Prop()
   @Field(() => GraphQLISODateTime, {

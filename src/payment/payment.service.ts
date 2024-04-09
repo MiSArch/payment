@@ -27,7 +27,6 @@ export class PaymentService {
   /**
    * Retrieves payment based on the provided arguments and filter.
    * @param args - The arguments for finding payment.
-   * @param filter - The filter to apply when retrieving payment.
    * @returns A promise that resolves to an array of Payment objects.
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
@@ -46,6 +45,7 @@ export class PaymentService {
       .find(query)
       .limit(first)
       .skip(skip)
+      .populate('paymentInformation')
       .sort({ [orderBy.field]: orderBy.direction });
 
     this.logger.debug(`{find} returning ${payments.length} results`);
@@ -85,6 +85,7 @@ export class PaymentService {
       connection.totalCount = await this.count(args.filter);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
+    this.logger.debug(`{buildConnection} returning ${JSON.stringify(connection)}`);
     return connection;
   }
 
@@ -98,7 +99,9 @@ export class PaymentService {
     this.logger.debug(`{findById} query: ${_id}`);
 
     // return all payment informations in the system
-    const existingPayment = await this.paymentModel.findById(_id);
+    const existingPayment = await this.paymentModel
+      .findById(_id)
+      .populate('paymentInformation');
 
     if (!existingPayment) {
       throw new NotFoundException(`Payment with id "${_id}" not found`);
@@ -176,7 +179,7 @@ export class PaymentService {
     // create payment
     const payment = await this.paymentModel.create({
       id,
-      paymentInformation,
+      paymentInformation: paymentInformation.id,
       totalAmount: compensatableOrderAmount,
     });
     return { payment, paymentInformation };
@@ -201,7 +204,8 @@ export class PaymentService {
 
     const existingPayment = await this.paymentModel
       .findOneAndUpdate({ _id }, update)
-      .setOptions({ overwrite: true, new: true });
+      .setOptions({ overwrite: true, new: true })
+      .populate('paymentInformation');
 
     if (!existingPayment) {
       throw new NotFoundException(`Payment with id "${_id}" not found`);
