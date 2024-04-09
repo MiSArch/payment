@@ -14,6 +14,7 @@ import { Role } from 'src/shared/enums/role.enum';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
+import { PaymentInformationFilter } from './dto/filter-payment-information.dto';
 
 /**
  * Service for handling payment information.
@@ -164,7 +165,7 @@ export class PaymentInformationService {
    * @param filter - The filter to apply to the count operation.
    * @returns A promise that resolves to the count of payment information records.
    */
-  async count(filter: any): Promise<number> {
+  async count(filter: PaymentInformationFilter): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.paymentInformationModel.countDocuments(filter);
 
