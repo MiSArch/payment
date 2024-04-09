@@ -67,15 +67,13 @@ export class PrepaymentService {
     // build timestamp for 6 days from now
     const to = xDaysBackFromNow(7);
     // get open payments, that are at at least 6 days old
-    const openPayments = await this.paymentService.find(
-      {
-        filter: {
-          status: PaymentStatus.PENDING,
-          paymentMethod: PaymentMethod.PREPAYMENT,
-          to,
-        }
+    const openPayments = await this.paymentService.find({
+      filter: {
+        status: PaymentStatus.PENDING,
+        paymentMethod: PaymentMethod.PREPAYMENT,
+        to,
       },
-    );
+    });
 
     // Set all overdue payments to failed
     for (const payment of openPayments) {

@@ -65,15 +65,13 @@ export class InvoiceService {
     // build timestamp for 30 days from now
     const to = xDaysBackFromNow(30);
     // get open payments, that are at at least 6 days old
-    const openPayments = await this.paymentService.find(
-      {
-        filter: {
-          status: PaymentStatus.PENDING,
-          paymentMethod: PaymentMethod.INVOICE,
-          to,
-        }
+    const openPayments = await this.paymentService.find({
+      filter: {
+        status: PaymentStatus.PENDING,
+        paymentMethod: PaymentMethod.INVOICE,
+        to,
       },
-    );
+    });
 
     // Set all overdue payments to failed
     for (const payment of openPayments) {

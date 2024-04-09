@@ -25,10 +25,9 @@ export class PaymentProviderConnectionService {
     private readonly logger: Logger,
   ) {}
 
-  
   /**
    * Starts the payment process for the specified payment method and id.
-   * 
+   *
    * @param paymentMethod - The payment method to use for the payment process.
    * @param id - The id associated with the payment.
    * @returns A promise that resolves when the payment process is started.
@@ -55,7 +54,7 @@ export class PaymentProviderConnectionService {
 
   /**
    * Updates the payment status for the specified payment method and id.
-   * 
+   *
    * @param id - The id associated with the payment.
    * @param status - The status to update the payment to.
    * @returns A promise that resolves when the payment status is updated.

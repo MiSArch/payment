@@ -39,7 +39,6 @@ export class PaymentService {
       )}`,
     );
 
-
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
       .find(query)
@@ -85,7 +84,9 @@ export class PaymentService {
       connection.totalCount = await this.count(args.filter);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
-    this.logger.debug(`{buildConnection} returning ${JSON.stringify(connection)}`);
+    this.logger.debug(
+      `{buildConnection} returning ${JSON.stringify(connection)}`,
+    );
     return connection;
   }
 
@@ -192,7 +193,10 @@ export class PaymentService {
    * @returns A Promise that resolves to the updated Payment object.
    * @throws NotFoundException if the payment with the specified id is not found.
    */
-  async updatePaymentStatus(_id: string, status: PaymentStatus): Promise<Payment> {
+  async updatePaymentStatus(
+    _id: string,
+    status: PaymentStatus,
+  ): Promise<Payment> {
     this.logger.log(
       `{updatePaymentStatus} Updating payment status for id: "${_id}" to ${status}`,
     );
@@ -231,7 +235,9 @@ export class PaymentService {
   } {
     const query: any = {};
 
-    if (!filter) { return query }
+    if (!filter) {
+      return query;
+    }
 
     if (filter.status) {
       query.status = filter.status;
