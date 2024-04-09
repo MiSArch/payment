@@ -13,7 +13,7 @@ export class PaymentFilter {
   @Field({ description: 'Payment Information ID', nullable: true})
   paymentInformationId?: string;
 
-  @Field({ description: 'Payment method', nullable: true})
+  @Field(() => PaymentMethod, { description: 'Payment method', nullable: true})
   paymentMethod?: PaymentMethod;
 
   @Field({ description: 'Timebox start for payment creation', nullable: true})

@@ -24,7 +24,7 @@ export class PaymentInformationService {
     @InjectModel(PaymentInformation.name)
     private paymentInformationModel: Model<PaymentInformation>,
     // initialize logger with service context
-    private readonly logger: Logger,
+    private readonly logger: Logger = new Logger(PaymentInformationService.name),
   ) {}
 
   /**
@@ -85,21 +85,14 @@ export class PaymentInformationService {
    * @returns A promise that resolves to an array of PaymentInformation objects.
    */
   async find(
-    args: FindPaymentInformationsArgs,
-    filter: any,
+    args: FindPaymentInformationsArgs
   ): Promise<PaymentInformation[]> {
-    const { first, skip, orderBy } = args;
-    this.logger.debug(
-      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
-        filter,
-      )}`,
-    );
+    const { first, skip, orderBy, filter } = args;
+    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`);
 
     // retrieve the payment informations based on the provided arguments
-    // remove user informations from return since it is not exposed via graphql
     const paymentInfos = await this.paymentInformationModel
       .find(filter)
-      .select('-user')
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
@@ -134,7 +127,7 @@ export class PaymentInformationService {
       }
 
       // get nodes according to args and filter
-      connection.nodes = await this.find(args, args.filter);
+      connection.nodes = await this.find(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {

@@ -10,6 +10,9 @@ import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
 import { PaymentCreatedDto } from './dto/payment-created.dto';
 import { PaymentFilter } from './dto/filter-payment.input';
+import { PaymentMethod } from 'src/payment-method/payment-method.enum';
+import { FindPaymentInformationsArgs } from 'src/payment-information/dto/find-payment-informations.args';
+import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 
 /**
  * Service for handling payments.
@@ -21,7 +24,7 @@ export class PaymentService {
     private paymentModel: Model<Payment>,
     private readonly paymentInformationService: PaymentInformationService,
     // initialize logger with service context
-    private readonly logger: Logger,
+    private readonly logger: Logger = new Logger(PaymentService.name),
   ) {}
 
   /**
@@ -32,12 +35,8 @@ export class PaymentService {
   async find(args: FindPaymentArgs): Promise<Payment[]> {
     const { first, skip, orderBy, filter } = args;
     // build query
-    const query = this.buildQuery(filter);
-    this.logger.debug(
-      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
-        query,
-      )}`,
-    );
+    const query = await this.buildQuery(filter);
+    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`);
 
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
@@ -84,9 +83,6 @@ export class PaymentService {
       connection.totalCount = await this.count(args.filter);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
-    this.logger.debug(
-      `{buildConnection} returning ${JSON.stringify(connection)}`,
-    );
     return connection;
   }
 
@@ -118,7 +114,7 @@ export class PaymentService {
    * @returns A promise that resolves to the count of payment records.
    */
   async count(filter: PaymentFilter): Promise<number> {
-    const filterQuery = this.buildQuery(filter);
+    const filterQuery =  await this.buildQuery(filter);
     this.logger.debug(`{count} query: ${JSON.stringify(filterQuery)}`);
     const count = await this.paymentModel.countDocuments(filterQuery);
 
@@ -227,42 +223,59 @@ export class PaymentService {
    * @param filter - The filter object containing the criteria for the query.
    * @returns The query object.
    */
-  buildQuery(filter: PaymentFilter): {
+  async buildQuery(filter: PaymentFilter): Promise<{
     status?: string;
-    paymentInformation?: string;
-    paymentMethod?: string;
+    paymentInformation?: { $in: string[]};
     createdAt?: { $gte: Date; $lte: Date };
-  } {
+  }> {
     const query: any = {};
 
-    if (!filter) {
-      return query;
+    if (!filter) { return query; }
+
+    if (filter.status) { query.status = filter.status; }
+
+    if (filter.paymentInformationId || filter.paymentMethod) {
+      const allowedIds = await this.buildAllowedFilterIds(
+        filter.paymentInformationId,
+        filter.paymentMethod
+      )
+      query.paymentInformation = { $in: allowedIds };
     }
 
-    if (filter.status) {
-      query.status = filter.status;
-    }
+    if (filter.from) { query.createdAt = { $gte: filter.from }; }
 
-    if (filter.paymentInformationId) {
-      query.paymentInformation = filter.paymentInformationId;
-    }
-
-    if (filter.paymentMethod) {
-      query.paymentMethod = filter.paymentMethod;
-    }
-
-    if (filter.from) {
-      query.createdAt = {
-        $gte: filter.from,
-      };
-    }
-
-    if (filter.to) {
-      query.createdAt = {
-        ...query.createdAt,
-        $lte: filter.to,
-      };
-    }
+    if (filter.to) { query.createdAt = { ...query.createdAt, $lte: filter.to };}
     return query;
+  }
+
+  async buildAllowedFilterIds(
+    paymentInformationId?: string,
+    paymentMethod?: PaymentMethod
+  ): Promise<string[]> {
+    if (!paymentMethod) {
+      return [paymentInformationId];
+    }
+
+    // get all payment information ids since the method information is not directly stored in the payment
+    const args: FindPaymentInformationsArgs = {
+      orderBy: { field: PaymentInformationOrderField.ID, direction: 1 },
+      filter: { paymentMethod },
+    };
+    const paymentInformations = await this.paymentInformationService.find(args);
+    
+    const ids = paymentInformations.map(
+      (paymentInformation) => paymentInformation.id
+    );
+
+    if (!paymentInformationId) {
+      return ids;
+    }
+
+    // ensure nothing is returned if payment Information filter is set and not matching the method filter
+    if (paymentInformationId && !ids.includes(paymentInformationId)) {
+      return [];
+    }
+    
+    return [paymentInformationId];
   }
 }
