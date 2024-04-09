@@ -24,7 +24,7 @@ export class PaymentService {
     private paymentModel: Model<Payment>,
     private readonly paymentInformationService: PaymentInformationService,
     // initialize logger with service context
-    private readonly logger: Logger = new Logger(PaymentService.name),
+    private readonly logger: Logger,
   ) {}
 
   /**

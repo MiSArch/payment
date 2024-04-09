@@ -25,7 +25,7 @@ export class PaymentInformationService {
     @InjectModel(PaymentInformation.name)
     private paymentInformationModel: Model<PaymentInformation>,
     // initialize logger with service context
-    private readonly logger: Logger = new Logger(PaymentInformationService.name),
+    private readonly logger: Logger,
   ) {}
 
   /**
