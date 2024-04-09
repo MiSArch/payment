@@ -88,11 +88,12 @@ export class PaymentInformationService {
   async find(
     args: FindPaymentInformationsArgs
   ): Promise<PaymentInformation[]> {
-    const { first, skip, orderBy, filter } = args;
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
 
     // default order is ascending by id
-    if (!args.orderBy) {
-      args.orderBy = {
+    if (!orderBy) {
+      orderBy = {
         field: PaymentInformationOrderField.ID,
         direction: 1,
       };

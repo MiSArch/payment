@@ -33,11 +33,12 @@ export class PaymentService {
    * @returns A promise that resolves to an array of Payment objects.
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
-    const { first, skip, orderBy, filter } = args;
+    const { first, skip, filter } = args;
+    let {orderBy} = args;
 
     // default order is ascending by id
-    if (!args.orderBy) {
-      args.orderBy = { field: PaymentOrderField.ID, direction: 1 };
+    if (!orderBy) {
+      orderBy = { field: PaymentOrderField.ID, direction: 1 };
     }
     // build query
     const query = await this.buildQuery(filter);
