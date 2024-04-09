@@ -13,18 +13,16 @@
 
 The Payment microservice mainly plans the execution and compensation of payments.
 It additionally manages stored payments informations of users.
+It provides a Graphql API for general requests as well as a REST API for payment updates from the external simulation service. Is processes events asynchronously from other MisArch services via Dapr Events.
 For the full documentation visit the <a href="https://misarch.github.io/docs/docs/dev-manuals/services/payment" target="_blank">MisArch Docs Page</a>.
 
 ## Installation
-
-```bash
-$ npm install
-```
+The service just requires docker. <a href="https://docs.docker.com/engine/install/" target="_blank">Installation Guide</a>
 
 ## Running the app
-
+The service supports hot-reload when using the development docker file.
+Any changes to the source code will lead to the service restarting.
 ```bash
-# local docker dev setup
 $ docker compose -f docker-compose-dev.yaml up -d --build 
 ```
 
