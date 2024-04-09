@@ -58,7 +58,7 @@ export class InvoiceService {
   /**
    * Checks for open payments every 5 Mintutes and sets overdue payments to failed status.
    */
-  @Cron('5 * * * *')
+  @Cron('/5 * * * *')
   async checkOpenPayments() {
     this.logger.log(`{checkOpenPayments} Checking open payments`);
     // TODO notify user about upcoming due date
