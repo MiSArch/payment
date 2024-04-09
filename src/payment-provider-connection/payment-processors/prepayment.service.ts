@@ -77,6 +77,7 @@ export class PrepaymentService {
 
     // Set all overdue payments to failed
     for (const payment of openPayments) {
+      this.logger.log(`[${payment._id}] Setting payment to failed since it is overdue`);
       this.paymentService.updatePaymentStatus(
         payment._id,
         PaymentStatus.FAILED,
