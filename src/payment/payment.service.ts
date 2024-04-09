@@ -34,6 +34,11 @@ export class PaymentService {
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
     const { first, skip, orderBy, filter } = args;
+
+    // default order is ascending by id
+    if (!args.orderBy) {
+      args.orderBy = { field: PaymentOrderField.ID, direction: 1 };
+    }
     // build query
     const query = await this.buildQuery(filter);
     this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`);
@@ -67,14 +72,6 @@ export class PaymentService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: PaymentOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args and filter
       connection.nodes = await this.find(args);
     }
@@ -257,10 +254,7 @@ export class PaymentService {
     }
 
     // get all payment information ids since the method information is not directly stored in the payment
-    const args: FindPaymentInformationsArgs = {
-      orderBy: { field: PaymentInformationOrderField.ID, direction: 1 },
-      filter: { paymentMethod },
-    };
+    const args: FindPaymentInformationsArgs = { filter: { paymentMethod } };
     const paymentInformations = await this.paymentInformationService.find(args);
     
     const ids = paymentInformations.map(

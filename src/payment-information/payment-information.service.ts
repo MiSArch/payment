@@ -89,6 +89,14 @@ export class PaymentInformationService {
     args: FindPaymentInformationsArgs
   ): Promise<PaymentInformation[]> {
     const { first, skip, orderBy, filter } = args;
+
+    // default order is ascending by id
+    if (!args.orderBy) {
+      args.orderBy = {
+        field: PaymentInformationOrderField.ID,
+        direction: 1,
+      };
+    }
     this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`);
 
     // retrieve the payment informations based on the provided arguments
@@ -119,14 +127,6 @@ export class PaymentInformationService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: PaymentInformationOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args and filter
       connection.nodes = await this.find(args);
     }
