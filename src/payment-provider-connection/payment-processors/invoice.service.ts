@@ -56,7 +56,7 @@ export class InvoiceService {
   }
 
   /**
-   * Checks for open payments every 5 Mintutes and sets overdue payments to failed status.
+   * Checks for open payments every 15 Mintutes and sets overdue payments to failed status.
    */
   @Cron('*/15 * * * *')
   async checkOpenPayments() {
