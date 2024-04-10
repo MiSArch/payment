@@ -133,7 +133,7 @@ input PaymentFilter {
   paymentInformationId: String
 
   """Payment method"""
-  paymentMethod: String
+  paymentMethod: PaymentMethod
 
   """Timebox start for payment creation"""
   from: DateTime

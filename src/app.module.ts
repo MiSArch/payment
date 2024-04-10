@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentModule } from './payment/payment.module';
 import {
   ApolloFederationDriver,
@@ -37,6 +38,8 @@ import { OpenOrdersModule } from './open-orders/open-orders.module';
     MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
+    // To schedule cron jobs
+    ScheduleModule.forRoot(),
     PaymentInformationModule,
     PaymentModule,
     HealthModule,

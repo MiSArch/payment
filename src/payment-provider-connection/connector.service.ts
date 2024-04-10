@@ -12,7 +12,7 @@ export class ConnectorService {
   constructor(
     private readonly logger: Logger,
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,  
+    private readonly configService: ConfigService,
   ) {
     this.simulationEndpoint = this.configService.get<string>('SIMULATION_URL');
   }
@@ -26,7 +26,7 @@ export class ConnectorService {
    */
   async send(endpoint: string, data: any): Promise<AxiosResponse> {
     try {
-      if(!this.simulationEndpoint) {
+      if (!this.simulationEndpoint) {
         this.logger.error('Simulation URL not set');
         return null;
       }

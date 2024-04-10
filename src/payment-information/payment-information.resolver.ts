@@ -24,6 +24,7 @@ import { PaymentInformationConnection } from 'src/graphql-types/payment-informat
 import { FindPaymentArgs } from 'src/payment/dto/find-payments.dto';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
+import { PaymentFilter } from 'src/payment/dto/filter-payment.input';
 
 /**
  * Resolver for PaymentInformation objects.
@@ -112,16 +113,17 @@ export class PaymentInformationResolver {
    * Resolves the user for the given payment information.
    * @param paymentInformation The payment information object.
    * @returns The user object.
-  */
+   */
   @ResolveField()
   user(@Parent() paymentInformation: PaymentInformation) {
-    this.logger.log(`Resolving user for ${paymentInformation}`);
+    this.logger.log(`Resolving user for ${paymentInformation.id}`);
 
     return { __typename: 'User', id: paymentInformation.user.id };
   }
 
   @ResolveField(() => PaymentConnection, {
-    description: 'A connection for an users payments made with a payment information.',
+    description:
+      'A connection for an users payments made with a payment information.',
     nullable: true,
   })
   @Roles(Role.BUYER, Role.SITE_ADMIN, Role.EMPLOYEE)
@@ -132,8 +134,10 @@ export class PaymentInformationResolver {
     @CurrentUser() currentUser: User,
     @CurrentUserRoles() roles: Role[],
   ): Promise<PaymentConnection> {
-    this.logger.log(`Resolving Payments for Payment Information: ${paymentInformation.id}`);
-    const { user } = paymentInformation
+    this.logger.log(
+      `Resolving Payments for Payment Information: ${paymentInformation.id}`,
+    );
+    const { user } = paymentInformation;
     // roles authorized to access foreign payments
     const authorizedRoles = [Role.EMPLOYEE, Role.SITE_ADMIN];
 
@@ -153,10 +157,12 @@ export class PaymentInformationResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-    // filter for correct payment Information
-    const filter = { ...args.filter, paymentInformationId: paymentInformation.id };
+    // extend filter to retrieve associated payments for payment information
+    const filter: PaymentFilter = {
+      ...args.filter,
+      paymentInformationId: paymentInformation.id,
+    };
 
-
-    return this.paymentService.buildConnection(query, { ...args, filter});
+    return this.paymentService.buildConnection(query, { ...args, filter });
   }
 }

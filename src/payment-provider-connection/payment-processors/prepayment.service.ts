@@ -58,27 +58,26 @@ export class PrepaymentService {
   }
 
   /**
-   * Checks for open payments every 5 Mintutes and sets overdue payments to failed status.
+   * Checks for open payments every 15 Mintutes and sets overdue payments to failed status.
    */
-  @Cron('5 * * * *')
+  @Cron('*/15 * * * *')
   async checkOpenPayments() {
     this.logger.log(`{checkOpenPayments} Checking open payments`);
     // TODO notify user about upcoming due date
     // build timestamp for 6 days from now
     const to = xDaysBackFromNow(7);
     // get open payments, that are at at least 6 days old
-    const openPayments = await this.paymentService.find(
-      {
-        filter: {
-          status: PaymentStatus.PENDING,
-          paymentMethod: PaymentMethod.PREPAYMENT,
-          to,
-        }
+    const openPayments = await this.paymentService.find({
+      filter: {
+        status: PaymentStatus.PENDING,
+        paymentMethod: PaymentMethod.PREPAYMENT,
+        to,
       },
-    );
+    });
 
     // Set all overdue payments to failed
     for (const payment of openPayments) {
+      this.logger.log(`[${payment._id}] Setting payment to failed since it is overdue`);
       this.paymentService.updatePaymentStatus(
         payment._id,
         PaymentStatus.FAILED,

@@ -10,6 +10,7 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { PaymentInformation } from 'src/payment-information/entities/payment-information.entity';
+import { Types } from 'mongoose';
 
 @ObjectType({ description: 'A payment of an invoice or return' })
 @Schema({
@@ -44,9 +45,14 @@ export class Payment {
   })
   status: PaymentStatus;
 
-  @Prop({ required: true })
+  @Prop({
+    required: true,
+    type: Types.ObjectId,
+    ref: 'PaymentInformation',
+  })
   @Field(() => PaymentInformation, { description: 'Used Payment Information' })
-  paymentInformation: PaymentInformation;
+  // will be a string if the payment information is not populated
+  paymentInformation: PaymentInformation | string;
 
   @Prop()
   @Field(() => GraphQLISODateTime, {

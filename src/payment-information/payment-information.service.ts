@@ -14,6 +14,7 @@ import { Role } from 'src/shared/enums/role.enum';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
+import { PaymentInformationFilter } from './dto/filter-payment-information.dto';
 
 /**
  * Service for handling payment information.
@@ -54,7 +55,7 @@ export class PaymentInformationService {
       paymentMethod: PaymentMethod.CREDIT_CARD,
       publicMethodDetails: publicDetails,
       secretMethodDetails: input,
-      user: user.id,
+      user: user,
     });
   }
 
@@ -85,21 +86,23 @@ export class PaymentInformationService {
    * @returns A promise that resolves to an array of PaymentInformation objects.
    */
   async find(
-    args: FindPaymentInformationsArgs,
-    filter: any,
+    args: FindPaymentInformationsArgs
   ): Promise<PaymentInformation[]> {
-    const { first, skip, orderBy } = args;
-    this.logger.debug(
-      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
-        filter,
-      )}`,
-    );
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
+
+    // default order is ascending by id
+    if (!orderBy) {
+      orderBy = {
+        field: PaymentInformationOrderField.ID,
+        direction: 1,
+      };
+    }
+    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`);
 
     // retrieve the payment informations based on the provided arguments
-    // remove user informations from return since it is not exposed via graphql
     const paymentInfos = await this.paymentInformationModel
       .find(filter)
-      .select('-user')
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
@@ -125,16 +128,8 @@ export class PaymentInformationService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: PaymentInformationOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args and filter
-      connection.nodes = await this.find(args, args.filter);
+      connection.nodes = await this.find(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
@@ -171,7 +166,7 @@ export class PaymentInformationService {
    * @param filter - The filter to apply to the count operation.
    * @returns A promise that resolves to the count of payment information records.
    */
-  async count(filter: any): Promise<number> {
+  async count(filter: PaymentInformationFilter): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.paymentInformationModel.countDocuments(filter);
 

@@ -8,7 +8,6 @@ import { logger } from './shared/logger/winston.config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { LoggingValidationPipe } from './shared/pipes/logging-validation.pipe';
 
-
 /**
  * Initializes and starts the application.
  * @returns {Promise<void>} A promise that resolves when the application is running.
@@ -20,14 +19,12 @@ async function bootstrap() {
   app.useBodyParser('json', {
     type: ['application/json', 'application/cloudevents+json'],
   });
-  
-  
+
   await app.listen(8080);
-  
+
   // logging
   app.useLogger(logger);
-  
-  
+
   // workaround to generate the schema file with federation directives
   const { schema } = app.get(GraphQLSchemaHost);
   writeFileSync(

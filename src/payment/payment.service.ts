@@ -10,6 +10,9 @@ import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
 import { PaymentCreatedDto } from './dto/payment-created.dto';
 import { PaymentFilter } from './dto/filter-payment.input';
+import { PaymentMethod } from 'src/payment-method/payment-method.enum';
+import { FindPaymentInformationsArgs } from 'src/payment-information/dto/find-payment-informations.args';
+import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 
 /**
  * Service for handling payments.
@@ -27,25 +30,26 @@ export class PaymentService {
   /**
    * Retrieves payment based on the provided arguments and filter.
    * @param args - The arguments for finding payment.
-   * @param filter - The filter to apply when retrieving payment.
    * @returns A promise that resolves to an array of Payment objects.
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
-    const { first, skip, orderBy, filter } = args;
-    // build query
-    const query = this.buildQuery(filter);
-    this.logger.debug(
-      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
-        query,
-      )}`,
-    );
+    const { first, skip, filter } = args;
+    let {orderBy} = args;
 
+    // default order is ascending by id
+    if (!orderBy) {
+      orderBy = { field: PaymentOrderField.ID, direction: 1 };
+    }
+    // build query
+    const query = await this.buildQuery(filter);
+    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`);
 
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
       .find(query)
       .limit(first)
       .skip(skip)
+      .populate('paymentInformation')
       .sort({ [orderBy.field]: orderBy.direction });
 
     this.logger.debug(`{find} returning ${payments.length} results`);
@@ -69,14 +73,6 @@ export class PaymentService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: PaymentOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args and filter
       connection.nodes = await this.find(args);
     }
@@ -98,7 +94,9 @@ export class PaymentService {
     this.logger.debug(`{findById} query: ${_id}`);
 
     // return all payment informations in the system
-    const existingPayment = await this.paymentModel.findById(_id);
+    const existingPayment = await this.paymentModel
+      .findById(_id)
+      .populate('paymentInformation');
 
     if (!existingPayment) {
       throw new NotFoundException(`Payment with id "${_id}" not found`);
@@ -114,7 +112,7 @@ export class PaymentService {
    * @returns A promise that resolves to the count of payment records.
    */
   async count(filter: PaymentFilter): Promise<number> {
-    const filterQuery = this.buildQuery(filter);
+    const filterQuery =  await this.buildQuery(filter);
     this.logger.debug(`{count} query: ${JSON.stringify(filterQuery)}`);
     const count = await this.paymentModel.countDocuments(filterQuery);
 
@@ -176,7 +174,7 @@ export class PaymentService {
     // create payment
     const payment = await this.paymentModel.create({
       id,
-      paymentInformation,
+      paymentInformation: paymentInformation.id,
       totalAmount: compensatableOrderAmount,
     });
     return { payment, paymentInformation };
@@ -189,7 +187,10 @@ export class PaymentService {
    * @returns A Promise that resolves to the updated Payment object.
    * @throws NotFoundException if the payment with the specified id is not found.
    */
-  async updatePaymentStatus(_id: string, status: PaymentStatus): Promise<Payment> {
+  async updatePaymentStatus(
+    _id: string,
+    status: PaymentStatus,
+  ): Promise<Payment> {
     this.logger.log(
       `{updatePaymentStatus} Updating payment status for id: "${_id}" to ${status}`,
     );
@@ -201,7 +202,8 @@ export class PaymentService {
 
     const existingPayment = await this.paymentModel
       .findOneAndUpdate({ _id }, update)
-      .setOptions({ overwrite: true, new: true });
+      .setOptions({ overwrite: true, new: true })
+      .populate('paymentInformation');
 
     if (!existingPayment) {
       throw new NotFoundException(`Payment with id "${_id}" not found`);
@@ -219,42 +221,56 @@ export class PaymentService {
    * @param filter - The filter object containing the criteria for the query.
    * @returns The query object.
    */
-  buildQuery(filter: PaymentFilter): {
+  async buildQuery(filter: PaymentFilter): Promise<{
     status?: string;
-    paymentInformation?: { _id: string, paymentMethod?: string};
-    paymentMethod?: string;
+    paymentInformation?: { $in: string[]};
     createdAt?: { $gte: Date; $lte: Date };
-  } {
+  }> {
     const query: any = {};
 
-    if (!filter) { return query }
+    if (!filter) { return query; }
 
-    if (filter.status) {
-      query.status = filter.status;
+    if (filter.status) { query.status = filter.status; }
+
+    if (filter.paymentInformationId || filter.paymentMethod) {
+      const allowedIds = await this.buildAllowedFilterIds(
+        filter.paymentInformationId,
+        filter.paymentMethod
+      )
+      query.paymentInformation = { $in: allowedIds };
     }
 
-    if (filter.paymentInformationId) {
-      query.paymentInformation = {};
-      query.paymentInformation._id = filter.paymentInformationId;
-    }
+    if (filter.from) { query.createdAt = { $gte: filter.from }; }
 
-    if (filter.paymentMethod) {
-      query.paymentInformation = query.paymentInformation || {}
-      query.paymentInformation.paymentMethod = filter.paymentMethod;
-    }
-
-    if (filter.from) {
-      query.createdAt = {
-        $gte: filter.from,
-      };
-    }
-
-    if (filter.to) {
-      query.createdAt = {
-        ...query.createdAt,
-        $lte: filter.to,
-      };
-    }
+    if (filter.to) { query.createdAt = { ...query.createdAt, $lte: filter.to };}
     return query;
+  }
+
+  async buildAllowedFilterIds(
+    paymentInformationId?: string,
+    paymentMethod?: PaymentMethod
+  ): Promise<string[]> {
+    if (!paymentMethod) {
+      return [paymentInformationId];
+    }
+
+    // get all payment information ids since the method information is not directly stored in the payment
+    const args: FindPaymentInformationsArgs = { filter: { paymentMethod } };
+    const paymentInformations = await this.paymentInformationService.find(args);
+    
+    const ids = paymentInformations.map(
+      (paymentInformation) => paymentInformation.id
+    );
+
+    if (!paymentInformationId) {
+      return ids;
+    }
+
+    // ensure nothing is returned if payment Information filter is set and not matching the method filter
+    if (paymentInformationId && !ids.includes(paymentInformationId)) {
+      return [];
+    }
+    
+    return [paymentInformationId];
   }
 }

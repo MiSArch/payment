@@ -44,9 +44,7 @@ export class PaymentInformation {
   secretMethodDetails?: object;
 
   // The user who owns the payment information
-  // It is not exposed via graphql since its just used internally
   @Prop({ required: true })
-  @HideField()
   @Field(() => User, {
     description: 'The user who owns the payment information',
   })

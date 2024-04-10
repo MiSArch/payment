@@ -54,8 +54,11 @@ export class UserResolver {
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
     // filter for correct user
-    const filter = { ...args.filter, user: { id: user.id }};
+    const filter = { ...args.filter, user: { id: user.id } };
 
-    return this.paymentInformationService.buildConnection(query, { ...args, filter });
+    return this.paymentInformationService.buildConnection(query, {
+      ...args,
+      filter,
+    });
   }
 }
