@@ -4,6 +4,9 @@ import { UserCreatedDto } from './dto/user/user-created.dto';
 import { EventService } from './events.service';
 import { PaymentInformationService } from 'src/payment-information/payment-information.service';
 
+/**
+ * Controller for incoming Events
+ */
 @Controller()
 export class EventController {
   constructor(
