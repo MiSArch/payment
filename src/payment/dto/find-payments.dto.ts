@@ -4,6 +4,9 @@ import { MAX_INT32 } from 'src/shared/constants/constants';
 import { PaymentFilter } from './filter-payment.input';
 import { PaymentOrder } from './order-directions.input';
 
+/**
+ * Arguments for finding payments.
+ */
 @ArgsType()
 export class FindPaymentArgs {
   @Field(() => Int, {

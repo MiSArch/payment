@@ -7,7 +7,7 @@ import {
   IsInt,
   Min,
 } from 'class-validator';
-import { ShipmentDTO } from './shipment.dto';
+
 /**
  * Describes DTO of an OrderItem of an Order.
  *
@@ -41,9 +41,8 @@ export class OrderItemDTO {
   @IsInt()
   @Min(0)
   compensatableAmount: number;
-  @ValidateNested()
-  @Type(() => ShipmentDTO)
-  shipment: ShipmentDTO;
+  @IsUUID()
+  shipmentMethodId: string;
   @IsArray()
   @IsUUID('4', { each: true })
   discountIds: string[];
