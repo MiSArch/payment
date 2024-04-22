@@ -33,14 +33,14 @@ export class ConnectorService {
       const response = await this.httpService
         .post(`${this.simulationEndpoint}/${endpoint}`, data)
         .toPromise(); // Convert Observable to Promise
-      if (response.status !== 200) {
+      if (response.status < 200 || response.status > 299) {
         this.logger.error(
           `Request to ${endpoint} failed with status ${response.status}`,
         );
       }
       return response;
     } catch (error) {
-      this.logger.error(`Error sending request to ${endpoint}:`, error);
+      this.logger.error(`Error sending request to ${endpoint}: ${error}`);
     }
   }
 }

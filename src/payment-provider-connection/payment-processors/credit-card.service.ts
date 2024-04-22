@@ -4,6 +4,7 @@ import { Payment } from 'src/payment/entities/payment.entity';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { ConnectorService } from '../connector.service';
+import { RegisterPaymentDto } from '../dto/register-payment.dto';
 
 /**
  * Service for handling credit card payments.
@@ -22,15 +23,17 @@ export class CreditCardService {
   /**
    * Creates a credit card payment for the specified id.
    * @param id - The id of the payment.
+   * @param amount - The amount to pay in cent.
    * @returns A Promise that resolves to the created payment.
    */
-  async create(id: string): Promise<any> {
+  async create(id: string, amount: number): Promise<any> {
     this.logger.log(`{create} Creating credit card payment for id: ${id}`);
     // emit enabled event since everything necessary is in place
     this.eventService.buildPaymentEnabledEvent(id);
 
     // register the payment with the payment provider
-    this.connectionService.send('register', { id, type: 'credit-card' });
+    const dto: RegisterPaymentDto = { paymentId: id, amount, paymentType: 'credit-card' };
+    this.connectionService.send('payment/register', dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
