@@ -45,6 +45,7 @@ export class EventService {
       this.paymentProviderConnectionService.startPaymentProcess(
         paymentInformation.paymentMethod,
         payment._id,
+        order.compensatableOrderAmount,
       );
     } catch (error) {
       this.logger.error(`{startPaymentProcess} Fatal error: ${error}`);

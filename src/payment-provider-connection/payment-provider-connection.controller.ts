@@ -5,7 +5,7 @@ import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 /**
  * Controller for handling payment provider connections.
  */
-@Controller('payment-provider-connection')
+@Controller('payment')
 export class PaymentProviderConnectionController {
   constructor(
     private readonly logger: Logger,

@@ -6,6 +6,7 @@ import { ConnectorService } from '../connector.service';
 import { Cron } from '@nestjs/schedule';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { xDaysBackFromNow } from 'src/shared/utils/functions.utils';
+import { RegisterPaymentDto } from '../dto/register-payment.dto';
 
 /**
  * Service for handling invoice payments.
@@ -25,13 +26,15 @@ export class PrepaymentService {
    * Creates an prepaid payment for the specified id.
    * The payment needs to arrive before further steps in the saga are enabled.
    * @param id - The id of the payment.
+   * @param amount - The amount to pay in cent.
    * @returns A Promise that resolves to the created prepaid payment.
    */
-  async create(id: string): Promise<any> {
+  async create(id: string, amount: number): Promise<any> {
     this.logger.log(`{create} Creating prepaid payment for id: ${id}`);
 
     // register the payment with the payment provider
-    this.connectionService.send('register', { id, type: 'prepayment' });
+    const dto: RegisterPaymentDto = { paymentId: id, amount, paymentType: 'prepayment' };
+    this.connectionService.send('payment/register', dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);

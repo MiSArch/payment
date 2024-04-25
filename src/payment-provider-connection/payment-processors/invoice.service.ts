@@ -6,6 +6,7 @@ import { ConnectorService } from '../connector.service';
 import { Cron } from '@nestjs/schedule';
 import { xDaysBackFromNow } from 'src/shared/utils/functions.utils';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
+import { RegisterPaymentDto } from '../dto/register-payment.dto';
 
 /**
  * Service for handling invoice payments.
@@ -25,15 +26,17 @@ export class InvoiceService {
    * Creates an invoice payment for the specified ID.
    * All required actions are in place, so the further steps in the saga are enabled.
    * @param id - The ID of the payment.
+   * @param amount - The amount to pay in cent.
    * @returns A Promise that resolves to the created invoice payment.
    */
-  async create(id: string): Promise<any> {
+  async create(id: string, amount: number): Promise<any> {
     this.logger.log(`{create} Creating invoice payment for id: ${id}`);
     // emit enabled event since everything necessary is in place
     this.eventService.buildPaymentEnabledEvent(id);
 
     // register the payment with the payment provider
-    this.connectionService.send('register', { id, type: 'invoice' });
+    const dto: RegisterPaymentDto = { paymentId: id, amount, paymentType: 'invoice' };
+    this.connectionService.send('payment/register', dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
