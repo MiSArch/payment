@@ -38,8 +38,8 @@ export class EventService {
       const { payment, paymentInformation } =
         await this.paymentService.create(order);
 
-        // Temporarily store the order context for later events
-        await this.openOrdersService.create(payment.id, order);
+      // Temporarily store the order context for later events
+      await this.openOrdersService.create(payment.id, order);
 
       // transfer to payment method controller to handle payment process
       this.paymentProviderConnectionService.startPaymentProcess(

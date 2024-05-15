@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentModule } from './payment/payment.module';
 import {
@@ -30,13 +30,20 @@ import { OpenOrdersModule } from './open-orders/open-orders.module';
       autoSchemaFile: {
         federation: 2,
       },
-      context: ({ req }) => ({ request: req }),
       // necessary to use guards on @ResolveField with drawbacks on performance
       fieldResolverEnhancers: ['guards'],
     }),
     // For data persistence
-    MongooseModule.forRoot(process.env.DATABASE_URI, {
-      dbName: process.env.DATABASE_NAME,
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>(
+          'DATABASE_URI',
+          'mongodb://localhost:27017',
+        ),
+        dbName: configService.get<string>('DATABASE_NAME', 'test'),
+      }),
+      inject: [ConfigService],
     }),
     // To schedule cron jobs
     ScheduleModule.forRoot(),

@@ -15,6 +15,7 @@ import { Logger } from '@nestjs/common';
 import { FindPaymentArgs } from './dto/find-payments.dto';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
+import { GraphQLResolveInfo } from 'graphql';
 
 /**
  * Resolver for Payment objects.
@@ -32,7 +33,7 @@ export class PaymentResolver {
     description: 'Retrieves all payments',
     name: 'payments',
   })
-  findAll(@Args() args: FindPaymentArgs, @Info() info) {
+  findAll(@Args() args: FindPaymentArgs, @Info() info: GraphQLResolveInfo) {
     this.logger.log(`Resolving payments for ${JSON.stringify(args)}`);
 
     // get query keys to avoid unnecessary workload

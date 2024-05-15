@@ -13,7 +13,6 @@ import { User } from 'src/graphql-types/user.entity';
 import { Role } from 'src/shared/enums/role.enum';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
-import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 import { PaymentInformationFilter } from './dto/filter-payment-information.dto';
 
 /**
@@ -85,24 +84,16 @@ export class PaymentInformationService {
    * @param filter - The filter to apply when retrieving payment information.
    * @returns A promise that resolves to an array of PaymentInformation objects.
    */
-  async find(
-    args: FindPaymentInformationsArgs
-  ): Promise<PaymentInformation[]> {
-    const { first, skip, filter } = args;
-    let { orderBy } = args;
-
-    // default order is ascending by id
-    if (!orderBy) {
-      orderBy = {
-        field: PaymentInformationOrderField.ID,
-        direction: 1,
-      };
-    }
-    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`);
+  async find(args: FindPaymentInformationsArgs): Promise<PaymentInformation[]> {
+    const { first, skip, filter, orderBy } = args;
+    this.logger.debug(
+      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`,
+    );
+    const query = await this.buildQuery(filter);
 
     // retrieve the payment informations based on the provided arguments
     const paymentInfos = await this.paymentInformationModel
-      .find(filter)
+      .find(query)
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
@@ -166,7 +157,7 @@ export class PaymentInformationService {
    * @param filter - The filter to apply to the count operation.
    * @returns A promise that resolves to the count of payment information records.
    */
-  async count(filter: PaymentInformationFilter): Promise<number> {
+  async count(filter: PaymentInformationFilter | undefined): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.paymentInformationModel.countDocuments(filter);
 
@@ -188,7 +179,7 @@ export class PaymentInformationService {
     _id: string,
     user: User,
     roles: Role[],
-  ): Promise<PaymentInformation> {
+  ): Promise<PaymentInformation | null> {
     this.logger.debug(
       `{delete} query: id: ${_id} user: ${user.id} roles: ${roles}`,
     );
@@ -207,21 +198,12 @@ export class PaymentInformationService {
     }
 
     // roles authorized to delete foreign payment information
-    const authorizedRoles = [Role.SITE_ADMIN, Role.EMPLOYEE];
+    const authorized = [Role.SITE_ADMIN, Role.EMPLOYEE];
 
     // check if the user is authorized to delete the payment information
-    if (
-      !roles.some((role) => authorizedRoles.includes(role)) &&
-      paymentInfo.user.toString() !== user.id.toString()
-    ) {
-      this.logger.debug(
-        `{delete} User ${user.id} not authorized to delete Payment Information with id "${_id}"`,
-      );
-      // throw not found error if the user is not authorized to delete the payment information
-      throw new UnauthorizedException(
-        `User not authorized to delete Payment Information with id "${_id}"`,
-      );
-    }
+    const paymentInfoUser = paymentInfo.user.id.toString();
+    const userId = user.id.toString();
+    this.authorizeDeletion(roles, authorized, paymentInfoUser, userId, _id);
 
     // delete the payment information
     const deletedPaymentInfo =
@@ -230,9 +212,56 @@ export class PaymentInformationService {
     this.logger.debug(
       `{delete} returning ${JSON.stringify(deletedPaymentInfo)}`,
     );
-    return deletedPaymentInfo;
+    return deletedPaymentInfo || null;
   }
 
+  /**
+   * Authorizes the deletion of payment information based on user roles and ownership.
+   * @param roles - The roles of the requesting user.
+   * @param authorizedRoles - The roles that are authorized to delete payment information.
+   * @param paymentInfoUser - The user who owns the payment information.
+   * @param requestingUser - The user requesting the deletion.
+   * @param _id - The ID of the payment information.
+   */
+  private authorizeDeletion(
+    roles: Role[],
+    authorizedRoles: Role[],
+    paymentInfoUser: string,
+    requestingUser: string,
+    _id: string,
+  ) {
+    if (
+      !roles.some((role) => authorizedRoles.includes(role)) &&
+      paymentInfoUser !== requestingUser
+    ) {
+      this.logger.debug(
+        `{delete} User ${requestingUser} not authorized to delete Payment Information with id "${_id}"`,
+      );
+      // throw not found error if the user is not authorized to delete the payment information
+      throw new UnauthorizedException(
+        `User not authorized to delete Payment Information with id "${_id}"`,
+      );
+    }
+  }
+
+  /**
+   * Builds a query for the provided filter.
+   * @param filter - The filter to apply to the query.
+   * @returns An object representing the query.
+   */
+  private buildQuery(filter: PaymentInformationFilter | undefined): {
+    paymentMethod?: PaymentMethod;
+    user?: User;
+  } {
+    const query: any = {};
+    if (filter?.paymentMethod) {
+      query.paymentMethod = filter.paymentMethod;
+    }
+    if (filter?.user) {
+      query.user = filter.user;
+    }
+    return query;
+  }
   /**
    * Adds default payment informations (prepayment and invoice) for an user.
    *

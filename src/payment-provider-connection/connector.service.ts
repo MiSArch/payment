@@ -14,7 +14,10 @@ export class ConnectorService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.simulationEndpoint = this.configService.get<string>('SIMULATION_URL');
+    this.simulationEndpoint = this.configService.get<string>(
+      'SIMULATION_URL',
+      'localhost:3000',
+    );
   }
 
   /**
@@ -26,13 +29,13 @@ export class ConnectorService {
    */
   async send(endpoint: string, data: any): Promise<AxiosResponse> {
     try {
-      if (!this.simulationEndpoint) {
-        this.logger.error('Simulation URL not set');
-        return null;
-      }
       const response = await this.httpService
         .post(`${this.simulationEndpoint}/${endpoint}`, data)
         .toPromise(); // Convert Observable to Promise
+
+      if (!response) {
+        throw new Error('No response received from request');
+      }
       if (response.status < 200 || response.status > 299) {
         this.logger.error(
           `Request to ${endpoint} failed with status ${response.status}`,
@@ -41,6 +44,7 @@ export class ConnectorService {
       return response;
     } catch (error) {
       this.logger.error(`Error sending request to ${endpoint}: ${error}`);
+      throw error;
     }
   }
 }

@@ -32,7 +32,11 @@ export class CreditCardService {
     this.eventService.buildPaymentEnabledEvent(id);
 
     // register the payment with the payment provider
-    const dto: RegisterPaymentDto = { paymentId: id, amount, paymentType: 'credit-card' };
+    const dto: RegisterPaymentDto = {
+      paymentId: id,
+      amount,
+      paymentType: 'credit-card',
+    };
     this.connectionService.send('payment/register', dto);
 
     // update the payment status

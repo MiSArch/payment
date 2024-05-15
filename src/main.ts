@@ -18,12 +18,12 @@ async function bootstrap() {
   app.useBodyParser('json', {
     type: ['application/json', 'application/cloudevents+json'],
   });
-  
+
   await app.listen(8080);
 
   // logging
   app.useLogger(logger);
-  
+
   // workaround to generate the schema file with federation directives
   const { schema } = app.get(GraphQLSchemaHost);
   writeFileSync(

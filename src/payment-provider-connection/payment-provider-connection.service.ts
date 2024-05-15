@@ -4,7 +4,6 @@ import {
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
-import { PaymentInformationService } from 'src/payment-information/payment-information.service';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { CreditCardService } from './payment-processors/credit-card.service';
@@ -35,7 +34,11 @@ export class PaymentProviderConnectionService {
    * @returns A promise that resolves when the payment process is started.
    * @throws {NotImplementedException} If the controller for the payment method is not implemented.
    */
-  startPaymentProcess(paymentMethod: PaymentMethod, id: string, amount: number): Promise<any> {
+  startPaymentProcess(
+    paymentMethod: PaymentMethod,
+    id: string,
+    amount: number,
+  ): Promise<any> {
     this.logger.log(
       `{startPaymentProcess} Starting payment for paymentMethod: ${paymentMethod}`,
     );
@@ -64,14 +67,17 @@ export class PaymentProviderConnectionService {
    * @throws {NotImplementedException} If the controller for the payment method is not implemented.
    */
   async updatePaymentStatus(id: string, status: PaymentStatus): Promise<any> {
-   try {
+    try {
       // get the payment method from the payment
       const payment = await this.paymentService.findById(id);
       if (typeof payment.paymentInformation === 'string') {
         throw new NotFoundException('Payment Information not found');
       }
-      const paymentMethod: PaymentMethod = payment.paymentInformation.paymentMethod;
-      this.logger.log(`{updatePaymentStatus} Updating payment [id] ${id} with method ${paymentMethod} to status ${status}`)
+      const paymentMethod: PaymentMethod =
+        payment.paymentInformation.paymentMethod;
+      this.logger.log(
+        `{updatePaymentStatus} Updating payment [id] ${id} with method ${paymentMethod} to status ${status}`,
+      );
 
       // call the create function of the appropriate payment method controller
       switch (paymentMethod) {
@@ -87,7 +93,9 @@ export class PaymentProviderConnectionService {
           );
       }
     } catch (error) {
-      this.logger.error(`{updatePaymentStatus} Error updating payment status: ${error.message}`);
+      this.logger.error(
+        `{updatePaymentStatus} Error updating payment status: ${error.message}`,
+      );
       throw error;
     }
   }

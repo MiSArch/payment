@@ -25,6 +25,7 @@ import { FindPaymentArgs } from 'src/payment/dto/find-payments.dto';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
 import { PaymentFilter } from 'src/payment/dto/filter-payment.input';
+import { GraphQLResolveInfo } from 'graphql';
 
 /**
  * Resolver for PaymentInformation objects.
@@ -63,7 +64,7 @@ export class PaymentInformationResolver {
   })
   find(
     @Args() args: FindPaymentInformationsArgs,
-    @Info() info,
+    @Info() info: GraphQLResolveInfo,
   ): Promise<PaymentInformationConnection> {
     this.logger.log(
       `Resolving paymentInformations for ${JSON.stringify(args)}`,
@@ -130,7 +131,7 @@ export class PaymentInformationResolver {
   async payments(
     @Parent() paymentInformation: PaymentInformation,
     @Args() args: FindPaymentArgs,
-    @Info() info,
+    @Info() info: GraphQLResolveInfo,
     @CurrentUser() currentUser: User,
     @CurrentUserRoles() roles: Role[],
   ): Promise<PaymentConnection> {
