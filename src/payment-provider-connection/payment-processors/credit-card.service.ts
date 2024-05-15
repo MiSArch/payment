@@ -24,9 +24,10 @@ export class CreditCardService {
    * Creates a credit card payment for the specified id.
    * @param id - The id of the payment.
    * @param amount - The amount to pay in cent.
+   * @param CVC - The credit card CVC.
    * @returns A Promise that resolves to the created payment.
    */
-  async create(id: string, amount: number): Promise<any> {
+  async create(id: string, amount: number, authorization: any): Promise<any> {
     this.logger.log(`{create} Creating credit card payment for id: ${id}`);
     // emit enabled event since everything necessary is in place
     this.eventService.buildPaymentEnabledEvent(id);
@@ -36,6 +37,7 @@ export class CreditCardService {
       paymentId: id,
       amount,
       paymentType: 'credit-card',
+      paymentAuthorization: authorization,
     };
     this.connectionService.send('payment/register', dto);
 

@@ -10,6 +10,7 @@ import { CreditCardService } from './payment-processors/credit-card.service';
 import { InvoiceService } from './payment-processors/invoice.service';
 import { PrepaymentService } from './payment-processors/prepayment.service';
 import { PaymentService } from 'src/payment/payment.service';
+import { PaymentAuthorization } from 'src/events/dto/order/order.dto';
 
 /**
  * Service for handling payment provider connections.
@@ -38,6 +39,7 @@ export class PaymentProviderConnectionService {
     paymentMethod: PaymentMethod,
     id: string,
     amount: number,
+    paymentAuthorization?: PaymentAuthorization,
   ): Promise<any> {
     this.logger.log(
       `{startPaymentProcess} Starting payment for paymentMethod: ${paymentMethod}`,
@@ -45,7 +47,8 @@ export class PaymentProviderConnectionService {
     // call the create function of the appropriate payment method controller
     switch (paymentMethod) {
       case PaymentMethod.CREDIT_CARD:
-        return this.creditCardService.create(id, amount);
+        if (!paymentAuthorization) { throw new Error('Authorization missing') }
+        return this.creditCardService.create(id, amount, paymentAuthorization);
       case PaymentMethod.PREPAYMENT:
         return this.prepaymentService.create(id, amount);
       case PaymentMethod.INVOICE:
