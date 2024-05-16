@@ -26,6 +26,7 @@ import { OpenOrdersModule } from './open-orders/open-orders.module';
     // For GraphQL Federation v2
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
+      context: ({ req }: { req: Request }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
