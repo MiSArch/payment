@@ -32,12 +32,10 @@ export class EventService {
 
   async startPaymentProcess(order: OrderDTO): Promise<any> {
     this.logger.log(`Starting payment process for order with id: ${order.id}`);
-
     // Call the payment service to start the payment process
     try {
       const { payment, paymentInformation } =
         await this.paymentService.create(order);
-
       // Temporarily store the order context for later events
       await this.openOrdersService.create(payment.id, order);
 
@@ -49,10 +47,9 @@ export class EventService {
       );
     } catch (error) {
       this.logger.error(`{startPaymentProcess} Fatal error: ${error}`);
-
-      // remove the open order
-      this.openOrdersService.delete(order.id);
-      // publish payment error event
+      if (await this.openOrdersService.existsByOrderId(order.id)) {
+        this.openOrdersService.delete(order.id);
+      }
       this.publishPaymentFailedEvent(order);
     }
   }
