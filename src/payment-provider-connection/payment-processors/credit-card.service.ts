@@ -39,7 +39,7 @@ export class CreditCardService {
       paymentType: 'credit-card',
       paymentAuthorization: authorization,
     };
-    this.connectionService.send('payment/register', dto);
+    this.connectionService.send(dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
@@ -61,23 +61,7 @@ export class CreditCardService {
       return this.paymentService.updatePaymentStatus(paymentId, status);
     }
 
-    // get the payment
-    const payment: Payment = await this.paymentService.findById(paymentId);
-    const { numberOfRetries } = payment;
-
-    // check if the payment has reached the maximum number of retries
-    if (numberOfRetries >= 3) {
-      // emit failed event
-      this.eventService.buildPaymentFailedEvent(paymentId);
-
-      // update the payment status
-      return this.paymentService.updatePaymentStatus(paymentId, status);
-    }
-
-    // otherwise retry the payment
-    return this.connectionService.send('register', {
-      paymentId,
-      type: 'credit-card',
-    });
+    this.eventService.buildPaymentFailedEvent(paymentId);
+    return this.paymentService.updatePaymentStatus(paymentId, PaymentStatus.INKASSO);
   }
 }

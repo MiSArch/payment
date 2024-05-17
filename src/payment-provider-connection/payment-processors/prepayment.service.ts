@@ -39,7 +39,7 @@ export class PrepaymentService {
       amount,
       paymentType: 'prepayment',
     };
-    this.connectionService.send('payment/register', dto);
+    this.connectionService.send(dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
@@ -58,7 +58,8 @@ export class PrepaymentService {
     );
 
     if (status !== PaymentStatus.SUCCEEDED) {
-      return this.paymentService.updatePaymentStatus(paymentId, status);
+      this.eventService.buildPaymentFailedEvent(paymentId);
+      return this.paymentService.updatePaymentStatus(paymentId, PaymentStatus.FAILED);
     }
 
     // emit enabled event since everything necessary is in place

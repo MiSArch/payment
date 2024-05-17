@@ -8,29 +8,28 @@ import { AxiosResponse } from 'axios';
  */
 @Injectable()
 export class ConnectorService {
-  private simulationEndpoint: string;
+  private paymentProvider: string;
   constructor(
     private readonly logger: Logger,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.simulationEndpoint = this.configService.get<string>(
-      'SIMULATION_URL',
+    this.paymentProvider = this.configService.get<string>(
+      'PAYMENT_PROVIDER_URL',
       'localhost:3000',
     );
   }
 
   /**
-   * Sends a request to the specified endpoint with the provided data.
-   * @param endpoint The endpoint to send the request to.
+   * Sends a request to the- in the env specified endpoint - with the provided data.
    * @param data The data to send with the request.
    * @returns An Observable that emits the AxiosResponse object.
    * @throws An error if the request fails.
    */
-  async send(endpoint: string, data: any): Promise<AxiosResponse> {
+  async send(data: any): Promise<AxiosResponse> {
     try {
       const response = await this.httpService
-        .post(`${this.simulationEndpoint}/${endpoint}`, data)
+        .post(this.paymentProvider, data)
         .toPromise(); // Convert Observable to Promise
 
       if (!response) {
@@ -38,12 +37,12 @@ export class ConnectorService {
       }
       if (response.status < 200 || response.status > 299) {
         this.logger.error(
-          `Request to ${endpoint} failed with status ${response.status}`,
+          `Request to ${this.paymentProvider} failed with status ${response.status}`,
         );
       }
       return response;
     } catch (error) {
-      this.logger.error(`Error sending request to ${endpoint}: ${error}`);
+      this.logger.error(`Error sending request to ${this.paymentProvider}: ${error}`);
       throw error;
     }
   }

@@ -41,7 +41,7 @@ export class InvoiceService {
       amount,
       paymentType: 'invoice',
     };
-    this.connectionService.send('payment/register', dto);
+    this.connectionService.send(dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
@@ -58,9 +58,14 @@ export class InvoiceService {
     this.logger.log(
       `{update} Updating invoice payment status for id: ${paymentId} to: ${status}`,
     );
-
-    // update the payment status
-    return this.paymentService.updatePaymentStatus(paymentId, status);
+    
+    if (status !== PaymentStatus.FAILED) {
+      return this.paymentService.updatePaymentStatus(paymentId, status);
+    }
+    return this.paymentService.updatePaymentStatus(
+      paymentId,
+      PaymentStatus.INKASSO
+    );
   }
 
   /**
