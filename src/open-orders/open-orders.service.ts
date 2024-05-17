@@ -64,16 +64,14 @@ export class OpenOrdersService {
    * @returns A Promise that resolves to the deleted open order.
    * @throws NotFoundException if the open order is not found.
    */
-  async delete(paymentId: string): Promise<OpenOrder> {
-    this.logger.log(`{delete} Deleting open order for payment: ${paymentId}`);
+  async delete(query: { paymentId: string } | { orderId: string }): Promise<OpenOrder> {
+    this.logger.log(`{delete} Deleting open order for: ${JSON.stringify(query)}`);
 
-    const deletedOrder = await this.openOrderModel.findOneAndDelete({
-      paymentId,
-    });
+    const deletedOrder = await this.openOrderModel.findOneAndDelete({ query });
 
     if (!deletedOrder) {
       throw new NotFoundException(
-        `Open order for payment: ${paymentId} not found`,
+        `Open order for ${JSON.stringify(query)} not found`,
       );
     }
 

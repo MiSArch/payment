@@ -48,7 +48,7 @@ export class EventService {
     } catch (error) {
       this.logger.error(`{startPaymentProcess} Fatal error: ${error}`);
       if (await this.openOrdersService.existsByOrderId(order.id)) {
-        this.openOrdersService.delete(order.id);
+        this.openOrdersService.delete({ orderId: order.id });
       }
       this.publishPaymentFailedEvent(order);
     }
@@ -130,7 +130,7 @@ export class EventService {
     // get the order Context for the payment
     const openOrder = await this.getOpenOrder(paymentId);
     // delete the open order
-    this.openOrdersService.delete(paymentId);
+    this.openOrdersService.delete({ paymentId });
     return this.publishPaymentProcessedEvent(openOrder.order);
   }
 
