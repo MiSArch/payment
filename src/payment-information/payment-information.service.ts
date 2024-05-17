@@ -93,8 +93,11 @@ export class PaymentInformationService {
     );
     const query = await this.buildQuery(filter);
     // default order direction is ascending
-    if (!orderBy) {
-      orderBy = { field: PaymentInformationOrderField.ID, direction: 1 };
+    if (!orderBy || !orderBy.field || !orderBy.direction) {
+      orderBy = {
+        field: orderBy?.field || PaymentInformationOrderField.ID,
+        direction: orderBy?.direction || 1,
+      };
     }
     // retrieve the payment informations based on the provided arguments
     const paymentInfos = await this.paymentInformationModel

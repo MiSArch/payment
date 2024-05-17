@@ -40,8 +40,11 @@ export class PaymentService {
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`,
     );
     // default order direction is ascending
-    if (!orderBy) {
-      orderBy = { field: PaymentOrderField.ID, direction: 1 };
+    if (!orderBy || !orderBy.field || orderBy.direction) {
+      orderBy = {
+        field: orderBy?.field || PaymentOrderField.ID,
+        direction: orderBy?.direction || 1
+      };
     }
 
     // retrieve the payments based on the provided arguments
