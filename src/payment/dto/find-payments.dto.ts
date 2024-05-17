@@ -4,6 +4,7 @@ import { MAX_INT32 } from 'src/shared/constants/constants';
 import { PaymentFilter } from './filter-payment.input';
 import { PaymentOrder } from './order-directions.input';
 import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
+import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 
 /**
  * Arguments for finding payments.
@@ -28,8 +29,7 @@ export class FindPaymentArgs {
     description: 'Ordering',
     nullable: true,
   })
-  // default order is ascending by id
-  orderBy: PaymentOrder = { field: PaymentOrderField.ID, direction: 1 };
+  orderBy?: PaymentOrder;
 
   @Field(() => PaymentFilter, {
     description: 'Filtering',

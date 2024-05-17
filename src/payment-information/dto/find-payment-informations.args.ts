@@ -4,6 +4,7 @@ import { MAX_INT32 } from 'src/shared/constants/constants';
 import { PaymentInformationOrder } from './order-directions.input';
 import { PaymentInformationFilter } from './filter-payment-information.dto';
 import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
+import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 
 @ArgsType()
 export class FindPaymentInformationsArgs {
@@ -25,11 +26,7 @@ export class FindPaymentInformationsArgs {
     description: 'Ordering',
     nullable: true,
   })
-  // default order by id ascending
-  orderBy: PaymentInformationOrder = {
-    field: PaymentInformationOrderField.ID,
-    direction: 1,
-  };
+  orderBy?: PaymentInformationOrder
 
   @Field(() => PaymentInformationFilter, {
     description: 'Filtering',

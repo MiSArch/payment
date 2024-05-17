@@ -14,6 +14,7 @@ import { Role } from 'src/shared/enums/role.enum';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { PaymentInformationConnection } from 'src/graphql-types/payment-information.connection.dto';
 import { PaymentInformationFilter } from './dto/filter-payment-information.dto';
+import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
 
 /**
  * Service for handling payment information.
@@ -85,21 +86,23 @@ export class PaymentInformationService {
    * @returns A promise that resolves to an array of PaymentInformation objects.
    */
   async find(args: FindPaymentInformationsArgs): Promise<PaymentInformation[]> {
-    const { first, skip, filter, orderBy } = args;
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(filter)}`,
     );
     const query = await this.buildQuery(filter);
-
+    // default order direction is ascending
+    if (!orderBy) {
+      orderBy = { field: PaymentInformationOrderField.ID, direction: 1 };
+    }
     // retrieve the payment informations based on the provided arguments
     const paymentInfos = await this.paymentInformationModel
       .find(query)
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
-
     this.logger.debug(`{find} returning ${paymentInfos.length} results`);
-
     return paymentInfos;
   }
 

@@ -17,7 +17,7 @@ type User
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: PaymentInformationOrder = {field: ID, direction: ASC}
+    orderBy: PaymentInformationOrder
 
     """Filtering"""
     filter: PaymentInformationFilter
@@ -97,7 +97,7 @@ type PaymentInformation
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: PaymentOrder = {field: ID, direction: ASC}
+    orderBy: PaymentOrder
 
     """Filtering"""
     filter: PaymentFilter
@@ -222,7 +222,7 @@ type Query {
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: PaymentInformationOrder = {field: ID, direction: ASC}
+    orderBy: PaymentInformationOrder
 
     """Filtering"""
     filter: PaymentInformationFilter
@@ -237,7 +237,7 @@ type Query {
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: PaymentOrder = {field: ID, direction: ASC}
+    orderBy: PaymentOrder
 
     """Filtering"""
     filter: PaymentFilter

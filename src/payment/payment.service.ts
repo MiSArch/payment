@@ -11,6 +11,7 @@ import { PaymentCreatedDto } from './dto/payment-created.dto';
 import { PaymentFilter } from './dto/filter-payment.input';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { FindPaymentInformationsArgs } from 'src/payment-information/dto/find-payment-informations.args';
+import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
 
 /**
  * Service for handling payments.
@@ -31,13 +32,17 @@ export class PaymentService {
    * @returns A promise that resolves to an array of Payment objects.
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
-    const { first, skip, filter, orderBy } = args;
-
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
     // build query
     const query = await this.buildQuery(filter);
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`,
     );
+    // default order direction is ascending
+    if (!orderBy) {
+      orderBy = { field: PaymentOrderField.ID, direction: 1 };
+    }
 
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
@@ -46,9 +51,7 @@ export class PaymentService {
       .skip(skip)
       .populate('paymentInformation')
       .sort({ [orderBy.field]: orderBy.direction });
-
     this.logger.debug(`{find} returning ${payments.length} results`);
-
     return payments;
   }
 
