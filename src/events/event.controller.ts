@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UnprocessableEntityException } from '@nestjs/common';
 import { ValidationSucceededDTO } from './dto/discount/discount-validation-succeeded.dto';
 import { UserCreatedDto } from './dto/user/user-created.dto';
 import { EventService } from './events.service';
@@ -40,22 +40,22 @@ export class EventController {
    * Endpoint for order validation successfull events from the discount service.
    *
    * @param body - The event data received from Dapr.
-   * @returns A promise that resolves to void.
    */
   @Post('order-validation-succeeded')
   async orderValidationSucceeded(
     @Body('data') event: ValidationSucceededDTO,
-  ): Promise<void> {
+  ) {
     // Extract the order context from the event
     const { order } = event;
     this.logger.log(`Received discount order validation success event for order "${order.id}"`);
 
     try {
-      this.eventService.startPaymentProcess(order);
+      return this.eventService.startPaymentProcess(order);
     } catch (error) {
       this.logger.error(
         `Error processing order validation success event: ${error}`,
       );
+      return new UnprocessableEntityException({ message: error.message })
     }
   }
 
@@ -63,20 +63,20 @@ export class EventController {
    * Endpoint for user creation events.
    *
    * @param userDto - The user data received from Dapr.
-   * @returns A promise that resolves to void.
    */
   @Post('user-created')
-  async userCreated(@Body('data') user: UserCreatedDto): Promise<void> {
+  async userCreated(@Body('data') user: UserCreatedDto){
     // Handle incoming event data from Dapr
     this.logger.log(`Received user creation event: ${JSON.stringify(user)}`);
 
     try {
       // add default payment informations prepayment and invoice for the user
-      this.paymentInformationService.addDefaultPaymentInformations({
+      return this.paymentInformationService.addDefaultPaymentInformations({
         id: user.id,
       });
     } catch (error) {
       this.logger.error(`Error processing user created event: ${error}`);
+      return new UnprocessableEntityException({ message: error.message });
     }
   }
 }
