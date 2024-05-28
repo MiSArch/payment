@@ -58,13 +58,13 @@ export class InvoiceService {
     this.logger.log(
       `{update} Updating invoice payment status for id: ${paymentId} to: ${status}`,
     );
-    
+
     if (status !== PaymentStatus.FAILED) {
       return this.paymentService.updatePaymentStatus(paymentId, status);
     }
     return this.paymentService.updatePaymentStatus(
       paymentId,
-      PaymentStatus.INKASSO
+      PaymentStatus.INKASSO,
     );
   }
 

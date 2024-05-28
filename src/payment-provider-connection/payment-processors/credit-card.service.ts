@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { EventService } from 'src/events/events.service';
-import { Payment } from 'src/payment/entities/payment.entity';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { ConnectorService } from '../connector.service';
