@@ -10,15 +10,15 @@ export class PaymentFilter {
   })
   status?: PaymentStatus;
 
-  @Field({ description: 'Payment Information ID', nullable: true})
+  @Field({ description: 'Payment Information ID', nullable: true })
   paymentInformationId?: string;
 
-  @Field(() => PaymentMethod, { description: 'Payment method', nullable: true})
+  @Field(() => PaymentMethod, { description: 'Payment method', nullable: true })
   paymentMethod?: PaymentMethod;
 
-  @Field({ description: 'Timebox start for payment creation', nullable: true})
+  @Field({ description: 'Timebox start for payment creation', nullable: true })
   from?: Date;
 
-  @Field({ description: 'Timebox end for payment creation', nullable: true})
+  @Field({ description: 'Timebox end for payment creation', nullable: true })
   to?: Date;
 }

@@ -1,7 +1,12 @@
-import { ArgumentMetadata, BadRequestException, Injectable, ValidationPipe } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  Injectable,
+  ValidationPipe,
+} from '@nestjs/common';
 @Injectable()
 export class LoggingValidationPipe extends ValidationPipe {
-  constructor(options?) {
+  constructor(options?: any) {
     super(options);
   }
 

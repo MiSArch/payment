@@ -7,6 +7,7 @@ import { Cron } from '@nestjs/schedule';
 import { xDaysBackFromNow } from 'src/shared/utils/functions.utils';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { RegisterPaymentDto } from '../dto/register-payment.dto';
+import { FindPaymentArgs } from 'src/payment/dto/find-payments.dto';
 
 /**
  * Service for handling invoice payments.
@@ -35,8 +36,12 @@ export class InvoiceService {
     this.eventService.buildPaymentEnabledEvent(id);
 
     // register the payment with the payment provider
-    const dto: RegisterPaymentDto = { paymentId: id, amount, paymentType: 'invoice' };
-    this.connectionService.send('payment/register', dto);
+    const dto: RegisterPaymentDto = {
+      paymentId: id,
+      amount,
+      paymentType: 'invoice',
+    };
+    this.connectionService.send(dto);
 
     // update the payment status
     return this.paymentService.updatePaymentStatus(id, PaymentStatus.PENDING);
@@ -54,8 +59,13 @@ export class InvoiceService {
       `{update} Updating invoice payment status for id: ${paymentId} to: ${status}`,
     );
 
-    // update the payment status
-    return this.paymentService.updatePaymentStatus(paymentId, status);
+    if (status !== PaymentStatus.FAILED) {
+      return this.paymentService.updatePaymentStatus(paymentId, status);
+    }
+    return this.paymentService.updatePaymentStatus(
+      paymentId,
+      PaymentStatus.INKASSO,
+    );
   }
 
   /**
@@ -68,20 +78,17 @@ export class InvoiceService {
     // build timestamp for 30 days from now
     const to = xDaysBackFromNow(30);
     // get open payments, that are at at least 6 days old
-    const openPayments = await this.paymentService.find({
-      filter: {
-        status: PaymentStatus.PENDING,
-        paymentMethod: PaymentMethod.INVOICE,
-        to,
-      },
-    });
+    const args: FindPaymentArgs = new FindPaymentArgs();
+    args.filter = {
+      status: PaymentStatus.PENDING,
+      paymentMethod: PaymentMethod.INVOICE,
+      to,
+    };
+    const openPayments = await this.paymentService.find(args);
     // Set all overdue payments to failed
     for (const payment of openPayments) {
       this.logger.log(`[${payment._id}] Setting payment to failed since it is overdue`);
-      this.paymentService.updatePaymentStatus(
-        payment._id,
-        PaymentStatus.FAILED,
-      );
+      this.paymentService.updatePaymentStatus(payment._id, PaymentStatus.FAILED);
 
       // emit failed event
       this.eventService.buildPaymentFailedEvent(payment._id);

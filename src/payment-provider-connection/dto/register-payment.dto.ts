@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 /**
  * DTO to register payments with external provider
@@ -15,4 +15,7 @@ export class RegisterPaymentDto {
 
   @IsString()
   paymentType: string;
+
+  @IsOptional()
+  paymentAuthorization?: object;
 }

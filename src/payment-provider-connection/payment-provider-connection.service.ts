@@ -4,13 +4,13 @@ import {
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
-import { PaymentInformationService } from 'src/payment-information/payment-information.service';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { CreditCardService } from './payment-processors/credit-card.service';
 import { InvoiceService } from './payment-processors/invoice.service';
 import { PrepaymentService } from './payment-processors/prepayment.service';
 import { PaymentService } from 'src/payment/payment.service';
+import { PaymentAuthorization } from 'src/events/dto/order/order.dto';
 
 /**
  * Service for handling payment provider connections.
@@ -35,14 +35,20 @@ export class PaymentProviderConnectionService {
    * @returns A promise that resolves when the payment process is started.
    * @throws {NotImplementedException} If the controller for the payment method is not implemented.
    */
-  startPaymentProcess(paymentMethod: PaymentMethod, id: string, amount: number): Promise<any> {
+  startPaymentProcess(
+    paymentMethod: PaymentMethod,
+    id: string,
+    amount: number,
+    paymentAuthorization?: PaymentAuthorization,
+  ): Promise<any> {
     this.logger.log(
       `{startPaymentProcess} Starting payment for paymentMethod: ${paymentMethod}`,
     );
     // call the create function of the appropriate payment method controller
     switch (paymentMethod) {
       case PaymentMethod.CREDIT_CARD:
-        return this.creditCardService.create(id, amount);
+        if (!paymentAuthorization) { throw new Error('Authorization missing') }
+        return this.creditCardService.create(id, amount, paymentAuthorization);
       case PaymentMethod.PREPAYMENT:
         return this.prepaymentService.create(id, amount);
       case PaymentMethod.INVOICE:
@@ -64,14 +70,17 @@ export class PaymentProviderConnectionService {
    * @throws {NotImplementedException} If the controller for the payment method is not implemented.
    */
   async updatePaymentStatus(id: string, status: PaymentStatus): Promise<any> {
-   try {
+    try {
       // get the payment method from the payment
       const payment = await this.paymentService.findById(id);
       if (typeof payment.paymentInformation === 'string') {
         throw new NotFoundException('Payment Information not found');
       }
-      const paymentMethod: PaymentMethod = payment.paymentInformation.paymentMethod;
-      this.logger.log(`{updatePaymentStatus} Updating payment [id] ${id} with method ${paymentMethod} to status ${status}`)
+      const paymentMethod: PaymentMethod =
+        payment.paymentInformation.paymentMethod;
+      this.logger.log(
+        `{updatePaymentStatus} Updating payment [id] ${id} with method ${paymentMethod} to status ${status}`,
+      );
 
       // call the create function of the appropriate payment method controller
       switch (paymentMethod) {
@@ -87,7 +96,9 @@ export class PaymentProviderConnectionService {
           );
       }
     } catch (error) {
-      this.logger.error(`{updatePaymentStatus} Error updating payment status: ${error.message}`);
+      this.logger.error(
+        `{updatePaymentStatus} Error updating payment status: ${error.message}`,
+      );
       throw error;
     }
   }

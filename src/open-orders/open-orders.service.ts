@@ -25,7 +25,7 @@ export class OpenOrdersService {
     this.logger.log(
       `{create} Creating open order for payment: ${paymentId} and order: ${order.id}`,
     );
-    return this.openOrderModel.create({ paymentId, order });
+    return this.openOrderModel.create({ paymentId, orderId: order.id, order });
   }
 
   /**
@@ -48,21 +48,30 @@ export class OpenOrdersService {
   }
 
   /**
+   * Checks if an open order exists by payment ID.
+   * @param paymentId - The ID of the payment.
+   * @returns A Promise that resolves to a boolean indicating if the open order exists.
+   */
+  async existsByOrderId(orderId: string): Promise<boolean> {
+    this.logger.log(`{existsByPaymentId} Checking if open order exists for payment: ${orderId}`);
+    const openOrder = await this.openOrderModel.findOne({ orderId });
+    return !!openOrder;
+  }
+
+  /**
    * Deletes an open order by payment ID.
    * @param paymentId - The ID of the payment associated with the open order.
    * @returns A Promise that resolves to the deleted open order.
    * @throws NotFoundException if the open order is not found.
    */
-  async delete(paymentId: string): Promise<OpenOrder> {
-    this.logger.log(`{delete} Deleting open order for payment: ${paymentId}`);
+  async delete(query: { paymentId: string } | { orderId: string }): Promise<OpenOrder> {
+    this.logger.log(`{delete} Deleting open order for: ${JSON.stringify(query)}`);
 
-    const deletedOrder = await this.openOrderModel.findOneAndDelete({
-      paymentId,
-    });
+    const deletedOrder = await this.openOrderModel.findOneAndDelete({ query });
 
     if (!deletedOrder) {
       throw new NotFoundException(
-        `Open order for payment: ${paymentId} not found`,
+        `Open order for ${JSON.stringify(query)} not found`,
       );
     }
 

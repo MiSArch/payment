@@ -14,6 +14,9 @@ export class OpenOrder {
 
   @Prop({ required: true })
   order: OrderDTO;
+
+  @Prop({ required: true })
+  orderId: string;
 }
 
 export const OpenOrderSchema = SchemaFactory.createForClass(OpenOrder);

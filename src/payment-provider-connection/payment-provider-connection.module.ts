@@ -9,6 +9,7 @@ import { PrepaymentService } from './payment-processors/prepayment.service';
 import { InvoiceService } from './payment-processors/invoice.service';
 import { PaymentInformationModule } from 'src/payment-information/payment-information.module';
 import { ConnectorService } from './connector.service';
+import { ConfigurationModule } from 'src/configuration/configuration.module';
 
 /**
  * Module for handling payment provider connections.
@@ -19,6 +20,7 @@ import { ConnectorService } from './connector.service';
     forwardRef(() => EventModule),
     PaymentInformationModule,
     HttpModule,
+    ConfigurationModule,
   ],
   providers: [
     PaymentProviderConnectionService,

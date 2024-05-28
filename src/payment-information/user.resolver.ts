@@ -9,6 +9,7 @@ import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { FindPaymentInformationsArgs } from './dto/find-payment-informations.args';
 import { CurrentUserRoles } from 'src/shared/utils/user-roles.decorator';
 import { CurrentUser } from 'src/shared/utils/user.decorator';
+import { GraphQLResolveInfo } from 'graphql';
 
 /**
  * Resolver for Foreign User objects.
@@ -28,7 +29,7 @@ export class UserResolver {
   async paymentInformations(
     @Parent() user: User,
     @Args() args: FindPaymentInformationsArgs,
-    @Info() info,
+    @Info() info: GraphQLResolveInfo,
     @CurrentUser() currentUser: User,
     @CurrentUserRoles() roles: Role[],
   ): Promise<PaymentInformationConnection> {

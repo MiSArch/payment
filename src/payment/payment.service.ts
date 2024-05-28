@@ -4,7 +4,6 @@ import { Payment } from './entities/payment.entity';
 import { Model } from 'mongoose';
 import { FindPaymentArgs } from './dto/find-payments.dto';
 import { PaymentConnection } from 'src/graphql-types/payment.connection';
-import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
 import { PaymentInformationService } from 'src/payment-information/payment-information.service';
 import { PaymentStatus } from 'src/shared/enums/payment-status.enum';
 import { OrderDTO } from 'src/events/dto/order/order.dto';
@@ -12,7 +11,7 @@ import { PaymentCreatedDto } from './dto/payment-created.dto';
 import { PaymentFilter } from './dto/filter-payment.input';
 import { PaymentMethod } from 'src/payment-method/payment-method.enum';
 import { FindPaymentInformationsArgs } from 'src/payment-information/dto/find-payment-informations.args';
-import { PaymentInformationOrderField } from 'src/shared/enums/payment-information-order-fields.enum';
+import { PaymentOrderField } from 'src/shared/enums/payment-order-fields.enum';
 
 /**
  * Service for handling payments.
@@ -34,15 +33,19 @@ export class PaymentService {
    */
   async find(args: FindPaymentArgs): Promise<Payment[]> {
     const { first, skip, filter } = args;
-    let {orderBy} = args;
-
-    // default order is ascending by id
-    if (!orderBy) {
-      orderBy = { field: PaymentOrderField.ID, direction: 1 };
-    }
+    let { orderBy } = args;
     // build query
     const query = await this.buildQuery(filter);
-    this.logger.debug(`{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`);
+    this.logger.debug(
+      `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(query)}`,
+    );
+    // default order direction is ascending
+    if (!orderBy || !orderBy.field || orderBy.direction) {
+      orderBy = {
+        field: orderBy?.field || PaymentOrderField.ID,
+        direction: orderBy?.direction || 1
+      };
+    }
 
     // retrieve the payments based on the provided arguments
     const payments = await this.paymentModel
@@ -51,9 +54,7 @@ export class PaymentService {
       .skip(skip)
       .populate('paymentInformation')
       .sort({ [orderBy.field]: orderBy.direction });
-
     this.logger.debug(`{find} returning ${payments.length} results`);
-
     return payments;
   }
 
@@ -111,8 +112,8 @@ export class PaymentService {
    * @param filter - The filter to apply to the count operation.
    * @returns A promise that resolves to the count of payment records.
    */
-  async count(filter: PaymentFilter): Promise<number> {
-    const filterQuery =  await this.buildQuery(filter);
+  async count(filter: PaymentFilter | undefined): Promise<number> {
+    const filterQuery = await this.buildQuery(filter);
     this.logger.debug(`{count} query: ${JSON.stringify(filterQuery)}`);
     const count = await this.paymentModel.countDocuments(filterQuery);
 
@@ -129,7 +130,7 @@ export class PaymentService {
    * @throws NotFoundException if the payment with the specified id is not found.
    * @throws UnauthorizedException if the user is not authorized to delete the payment.
    */
-  async delete(_id: string): Promise<Payment> {
+  async delete(_id: string): Promise<Payment | null> {
     this.logger.debug(`{delete} query: id: ${_id}`);
 
     // retrieve the payment
@@ -145,7 +146,7 @@ export class PaymentService {
     const deletedPayment = await this.paymentModel.findByIdAndDelete(_id);
 
     this.logger.debug(`{delete} returning ${JSON.stringify(deletedPayment)}`);
-    return deletedPayment;
+    return deletedPayment as Payment | null;
   }
 
   /**
@@ -221,56 +222,62 @@ export class PaymentService {
    * @param filter - The filter object containing the criteria for the query.
    * @returns The query object.
    */
-  async buildQuery(filter: PaymentFilter): Promise<{
+  async buildQuery(filter: PaymentFilter | undefined): Promise<{
     status?: string;
-    paymentInformation?: { $in: string[]};
+    paymentInformation?: { $in: string[] };
     createdAt?: { $gte: Date; $lte: Date };
   }> {
     const query: any = {};
 
-    if (!filter) { return query; }
+    if (!filter) {
+      return query;
+    }
 
-    if (filter.status) { query.status = filter.status; }
+    if (filter.status) {
+      query.status = filter.status;
+    }
 
     if (filter.paymentInformationId || filter.paymentMethod) {
       const allowedIds = await this.buildAllowedFilterIds(
         filter.paymentInformationId,
-        filter.paymentMethod
-      )
+        filter.paymentMethod,
+      );
       query.paymentInformation = { $in: allowedIds };
     }
 
-    if (filter.from) { query.createdAt = { $gte: filter.from }; }
+    if (filter.from) {
+      query.createdAt = { $gte: filter.from };
+    }
 
-    if (filter.to) { query.createdAt = { ...query.createdAt, $lte: filter.to };}
+    if (filter.to) {
+      query.createdAt = { ...query.createdAt, $lte: filter.to };
+    }
     return query;
   }
 
   async buildAllowedFilterIds(
     paymentInformationId?: string,
-    paymentMethod?: PaymentMethod
+    paymentMethod?: PaymentMethod,
   ): Promise<string[]> {
     if (!paymentMethod) {
-      return [paymentInformationId];
+      return [paymentInformationId || ''];
     }
-
     // get all payment information ids since the method information is not directly stored in the payment
-    const args: FindPaymentInformationsArgs = { filter: { paymentMethod } };
+    const args: FindPaymentInformationsArgs = new FindPaymentInformationsArgs();
+    args.filter = { paymentMethod };
     const paymentInformations = await this.paymentInformationService.find(args);
-    
-    const ids = paymentInformations.map(
-      (paymentInformation) => paymentInformation.id
-    );
 
+    const ids = paymentInformations.map(
+      (paymentInformation) => paymentInformation.id,
+    );
     if (!paymentInformationId) {
       return ids;
     }
-
     // ensure nothing is returned if payment Information filter is set and not matching the method filter
     if (paymentInformationId && !ids.includes(paymentInformationId)) {
       return [];
     }
-    
+
     return [paymentInformationId];
   }
 }
