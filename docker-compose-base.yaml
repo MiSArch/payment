@@ -20,7 +20,7 @@ services:
       DATABASE_URI: mongodb://payment-db:27017
       DATABASE_NAME: misarch
       SIMULATION_URL: http://simulation:8080
-      OTEL_TRACES_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
       OTEL_NODE_RESOURCE_DETECTORS: env,host,os
       OTEL_SERVICE_NAME: payment

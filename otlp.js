@@ -15,6 +15,7 @@ const sdk = new NodeSDK({
       '@opentelemetry/instrumentation-http': {
         'enabled': true,
         'enhancedMetrics': true,
+        'tracing': false,
       },
     }),
   ],
