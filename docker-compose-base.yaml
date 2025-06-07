@@ -20,6 +20,12 @@ services:
       DATABASE_URI: mongodb://payment-db:27017
       DATABASE_NAME: misarch
       SIMULATION_URL: http://simulation:8080
+      OTEL_TRACES_EXPORTER: none
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_NODE_RESOURCE_DETECTORS: env,host,os
+      OTEL_SERVICE_NAME: payment
+      OTEL_SEMCONV_STABILITY_OPT_IN: http
+      NODE_OPTIONS: --require @opentelemetry/auto-instrumentations-node/register
     depends_on:
       - payment-db
   payment-db:
